@@ -1,0 +1,36 @@
+.sidenav-container {
+    height: 100%;
+}
+
+.sidenav {
+    width: 200px;
+}
+
+.sidenav .mat-toolbar {
+    background: inherit;
+}
+
+.mat-toolbar.mat-primary {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+.mat-toolbar .mat-expansion-panel{
+    min-width: 200px;
+    max-width: 300px;
+}
+  
+.toolbar-spacer {
+    flex: 1 1 auto;
+}
+
+mat-form-field {
+    width: 500px;
+    margin-right: 20px;
+    font-size: smaller;
+  }
+
+div.router-outlet {
+    margin:2em;
+}
