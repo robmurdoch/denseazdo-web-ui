@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, of, EMPTY } from 'rxjs';
-import { catchError,  tap } from 'rxjs/operators';
+import { catchError, tap } from 'rxjs/operators';
 
 import { ApiVersion, Collection, ProjectInfo, SecurityNamespace } from './azdo-types';
 import { ConnectionInfo } from './types';
@@ -11,7 +11,6 @@ import { ConnectionService } from './connection.service';
   providedIn: 'root'
 })
 export class AzdoService {
-  currentConnection: ConnectionInfo | null;
   httpOptions = {
     headers: new HttpHeaders({})
   };
@@ -24,12 +23,11 @@ export class AzdoService {
   // '3zmfq5v5d3fmaweh4vqd4zyk4wpzv2exspcu25gq7m3aub3p6eqa'
 
   constructor(
+    private connectionService: ConnectionService,
     private http: HttpClient) {
-    this.currentConnection = null
   }
 
-  tryConnection(connectionInfo: ConnectionInfo, connectionService: ConnectionService) {
-
+  tryConnection(connectionInfo: ConnectionInfo) {
     this.apiVersions.forEach(apiVersion => {
       let url = `${connectionInfo.url}/_apis/projects?${apiVersion.version}`;
       let httpOptions = {
@@ -45,7 +43,7 @@ export class AzdoService {
         ).subscribe({
           complete: () => {
             connectionInfo.apiVersion = apiVersion.version;
-            connectionService.add(connectionInfo);
+            this.connectionService.add(connectionInfo);
           }
         });
     });
@@ -53,32 +51,34 @@ export class AzdoService {
 
   /** GET Security Namespaces from the server */
   getSecurityNamespaces(): Observable<Collection<SecurityNamespace>> {
-    if (this.currentConnection == null) {
-      return EMPTY;
-    }
-    else {
-      let url = `${this.currentConnection.url}/_apis/securitynamespaces?${this.currentConnection.apiVersion}`
+    var connection = this.connectionService.getConnection();
+    if (connection) {
+      let url = `${connection.url}/_apis/securitynamespaces?${connection.apiVersion}`
       console.log(url);
-      return this.http.get<Collection<SecurityNamespace>>(url, this.getHttpHeaders())
+      return this.http.get<Collection<SecurityNamespace>>(url, this.getHttpHeaders(connection))
         .pipe(
           tap(_ => this.log('fetching security namespaces')),
           catchError(this.handleError<Collection<SecurityNamespace>>('getSecurityNamespaces', {}))
         );
     }
+    else {
+      return EMPTY;
+    }
   }
 
   /** GET Projects from the server */
   getProjects(): Observable<Collection<ProjectInfo>> {
-    if (this.currentConnection == null) {
-      return EMPTY;
-    }
-    else {
-      let url = `${this.currentConnection.url}/_apis/projects?api-version=6.0`
-      return this.http.get<Collection<ProjectInfo>>(url, this.getHttpHeaders())
+    var connection = this.connectionService.getConnection();
+    if (connection) {
+      let url = `${connection.url}/_apis/projects?api-version=6.0`
+      return this.http.get<Collection<ProjectInfo>>(url, this.getHttpHeaders(connection))
         .pipe(
           tap(_ => this.log('fetched projects')),
           catchError(this.handleError<Collection<ProjectInfo>>('getProjects', {}))
         );
+    }
+    else {
+      return EMPTY;
     }
   }
 
@@ -107,15 +107,12 @@ export class AzdoService {
     console.log(message);
   }
 
-  private getHttpHeaders(): object {
-    if (this.currentConnection)
-      return {
-        headers: new HttpHeaders({
-          observe: 'response',
-          Authorization: 'Basic ' + btoa("" + ":" + this.currentConnection.token + "")
-        })
-      };
-    else
-      return {}
+  private getHttpHeaders(connectionInfo: ConnectionInfo) {
+    return {
+      headers: new HttpHeaders({
+        observe: 'response',
+        Authorization: 'Basic ' + btoa("" + ":" + connectionInfo.token + "")
+      })
+    };
   }
 }

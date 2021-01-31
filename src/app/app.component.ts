@@ -13,7 +13,7 @@ import { AzdoService } from './azdo.service'
 })
 export class AppComponent {
   title = 'Dense Azure DevOps';
-  description = 'Regulatory-driven Team Project organization';
+  description = 'Regulatory-driven Team Projects';
   connections: ConnectionInfo[] | null;
   currentConnection: ConnectionInfo | null;
   url: string;
@@ -24,14 +24,16 @@ export class AppComponent {
     private azdoService: AzdoService,
     public dialog: MatDialog) {
     this.connections = connectionService.connections;
-    if (this.connections.length > 0) {
-      this.currentConnection = this.connections[0];
-    }
-    else {
-      this.currentConnection = null;
-    }
+    this.currentConnection = null;
     this.url = "";
     this.token = "";
+  }
+
+  connectionChanged(event: any) {
+    console.log(event.value)
+    if (event.value.url?.substring(1, 4)?.toLowerCase() === "http") {
+      this.connectionService.setConnection(event.value)
+    }
   }
 
   openConnectionDialog(): void {
@@ -41,9 +43,13 @@ export class AppComponent {
     });
 
     dialogRef.afterClosed().subscribe(result => {
-      let newConnection: ConnectionInfo = new ConnectionInfo(result.url, result.token)
-      this.azdoService.tryConnection(
-        newConnection, this.connectionService);
+      if (result !== undefined) {
+        let newConnection: ConnectionInfo = new ConnectionInfo(result.url, result.token)
+        this.azdoService.tryConnection(newConnection);
+        if (this.connectionService.findConnection(newConnection.url)) {
+          this.currentConnection = newConnection;
+        }
+      }
     });
   }
 }
