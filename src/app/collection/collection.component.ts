@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 
-import { Collection, CollectionInfo, SecurityNamespace } from '../azdo-types';
+import { Collection, CollectionInfo, SecurityNamespace, Identity } from '../azdo-types';
 import { AzdoService } from '../azdo.service';
 
 @Component({
@@ -10,10 +10,12 @@ import { AzdoService } from '../azdo.service';
 })
 export class CollectionComponent implements OnInit {
   securityNamespaces: Collection<SecurityNamespace>;
+  projectValidUsersGroup: Collection<Identity>;
 
   constructor(
     private azdoService: AzdoService) {
     this.securityNamespaces = {};
+    this.projectValidUsersGroup = {};
   }
 
   ngOnInit(): void {
@@ -21,5 +23,17 @@ export class CollectionComponent implements OnInit {
       .subscribe(result => {
         this.securityNamespaces = result;
       });
+
+    this.azdoService.getProjectValidUsersGroup()
+      .subscribe(result => {
+        this.projectValidUsersGroup = result;
+      });
   }
+
+  // inspectProjectValidUsersGroup(): void {
+  //   this.projectValidUsersGroup.array.forEach(element => {
+      
+  //   });
+  // }
+
 }

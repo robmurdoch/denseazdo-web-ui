@@ -3,7 +3,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, of, EMPTY } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 
-import { ApiVersion, Collection, ProjectInfo, SecurityNamespace } from './azdo-types';
+import { ApiVersion, Collection, ProjectInfo, SecurityNamespace, Identity } from './azdo-types';
 import { ConnectionInfo } from './types';
 import { ConnectionService } from './connection.service';
 
@@ -64,6 +64,24 @@ export class AzdoService {
     else {
       return EMPTY;
     }
+  }
+
+  // TODO: get the EveryoneApplicationGroup instead
+  getProjectValidUsersGroup():Observable<Collection<Identity>>{
+    var connection = this.connectionService.getConnection();
+    if (connection) {
+      let url = `${connection.url}/_apis/identities?searchFilter=DisplayName&filterValue=Project%20Collection%20Valid%20Users&queryMembership=expandedDown&${connection.apiVersion}`
+      console.log(url);
+      return this.http.get<Collection<Identity>>(url, this.getHttpHeaders(connection))
+        .pipe(
+          tap(_ => this.log('fetching identities')),
+          catchError(this.handleError<Collection<Identity>>('getProjectValidUsersGroup', {}))
+        );
+    }
+    else {
+      return EMPTY;
+    }
+
   }
 
   /** GET Projects from the server */
