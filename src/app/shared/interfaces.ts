@@ -2,12 +2,7 @@
 /**
  * Contains information describing a connection.
  */
-export class ConnectionInfo {
-
-    constructor(url: string, token: string){
-        this.url = url
-        this.token = token
-    }
+export interface ConnectionInfo {
     /**
      * The url
      */
@@ -15,7 +10,7 @@ export class ConnectionInfo {
     /**
      * The token
      */
-    token: string;
+    token?: string;
     /**
      * The Version of AzDO at the other end of the ur
      */

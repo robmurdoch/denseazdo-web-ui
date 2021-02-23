@@ -8,9 +8,9 @@ describe('workspace-project App', () => {
     page = new AppPage();
   });
 
-  it('should display welcome message', async () => {
+  it('should display app title', async () => {
     await page.navigateTo();
-    expect(await page.getTitleText()).toEqual('web-ui app is running!');
+    expect(await page.getTitleText()).toEqual('Dense Azure DevOps');
   });
 
   afterEach(async () => {

@@ -1,15 +1,25 @@
 <h1 mat-dialog-title>New Connection</h1>
-<div mat-dialog-content>
+<div mat-dialog-content [formGroup]="connectionForm">
+
     <mat-form-field appearance="fill">
         <mat-label>Collection or Organization Url</mat-label>
-        <input matInput [(ngModel)]="data.url">
+        <input id="inputUrl" matInput required 
+            formControlName="inputUrl">
+        <mat-error *ngIf="inputUrl?.invalid && (inputUrl?.dirty || inputUrl?.touched)">{{getUrlErrorMessages()}}</mat-error>
     </mat-form-field>
-    <mat-form-field>
+
+    <div class="field-spacer"></div>
+
+    <mat-form-field appearance="fill">
         <mat-label>Token (save only)</mat-label>
-        <input matInput [(ngModel)]="data.token">
+        <input id="inputToken" matInput required 
+            formControlName="inputToken">
+        <mat-error *ngIf="inputToken?.invalid && (inputToken?.dirty || inputToken?.touched)">{{getTokenErrorMessages()}}</mat-error>
     </mat-form-field>
+
 </div>
 <div mat-dialog-actions>
     <button mat-button (click)="onCancelClick()">Cancel</button>
-    <button mat-button [mat-dialog-close]="data" cdkFocusInitial>Ok</button>
+    <button mat-button (click)="onOkClick()" cdkFocusInitial>Ok</button>
+    <mat-spinner diameter="35" mode="indeterminate" *ngIf="showSpinner === true"></mat-spinner>
 </div>

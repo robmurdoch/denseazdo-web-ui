@@ -1,5 +1,5 @@
 <mat-toolbar color="primary">
-  <span>Dense Azure DevOps</span>
+  <span id="AppTitle">Dense Azure DevOps</span>
   <span class="toolbar-spacer"></span>
   <button mat-icon-button aria-label="Share">
     <mat-icon>share</mat-icon>
@@ -12,12 +12,12 @@
       <mat-list-item>Tools</mat-list-item>
     </mat-list>
     <mat-nav-list (click)="drawer.toggle()">
-      <a mat-list-item routerLink="/organization">Organization</a>
+      <!-- <a mat-list-item routerLink="/organization">Organization</a>
       <a mat-list-item routerLink="/collection">Collection</a>
       <a mat-list-item routerLink="/project">Project</a>
       <a mat-list-item routerLink="/areasanditerations">Areas & Iterations</a>
       <a mat-list-item routerLink="/builddefinitions">Build Definitions</a>
-      <a mat-list-item routerLink="/releasedefinitions">Release Definitions</a>
+      <a mat-list-item routerLink="/releasedefinitions">Release Definitions</a> -->
     </mat-nav-list>
   </mat-sidenav>
   <mat-sidenav-content>
@@ -26,13 +26,18 @@
           <mat-icon aria-label="Toggle menu">menu</mat-icon>
         </button>
         <span class="toolbar-spacer"></span>
-        <mat-form-field appearance="fill">
-          <mat-label>Connections</mat-label>
-          <mat-select [(ngModel)]="currentConnection" name="url" (selectionChange)="connectionChanged($event)">
-            <mat-option *ngFor="let connection of connections" [value]="connection">{{connection.url}}</mat-option>
-            <mat-option (click)="openConnectionDialog()">New Connection</mat-option>
-          </mat-select>
-        </mat-form-field>
+        <button mat-button 
+          [matMenuTriggerFor]="connectionMenu"
+          (menuOpened)="connectionMenuOpened()">
+          {{azDoConnectionService.currentConnection.url}}:{{azDoConnectionService.currentConnection.apiVersion}}
+        </button>
+        <mat-menu #connectionMenu="matMenu">
+          <button mat-menu-item 
+            *ngFor="let connection of azDoConnectionService.connections"
+            (click)="connectionClicked(connection)">{{connection.url}}:{{connection.apiVersion}}</button>
+          <button mat-menu-item 
+            (click)="connectionClicked(undefined)">{{newConnectionPrompt}}</button>
+        </mat-menu>
     </mat-toolbar>
     <div class="router-outlet">
       <router-outlet></router-outlet>
