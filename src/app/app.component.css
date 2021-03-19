@@ -1,8 +1,20 @@
-.sidenav-container {
-    height: 100%;
+#container {
+    top: 64px !important;
 }
 
-.sidenav {
+.toolbar-spacer {
+    flex: 1 1 auto;
+}
+
+.icon-feedback-caption {
+    margin-left: 24px;
+}
+
+.tile {
+    background-color: #009169;
+}
+
+/* .sidenav {
     width: 200px;
 }
 
@@ -19,18 +31,21 @@
 .mat-toolbar .mat-expansion-panel{
     min-width: 200px;
     max-width: 300px;
-}
-  
-.toolbar-spacer {
-    flex: 1 1 auto;
-}
+} */
 
 mat-form-field {
     width: 500px;
     margin-right: 20px;
     font-size: smaller;
-  }
+}
 
-div.router-outlet {
-    margin:2em;
+.project-card{
+    max-width: 440px;
+}
+
+.mat-card-subtitle .project-description{
+    text-overflow: ellipsis;
+    overflow: hidden;
+    line-height: 20px;
+    height: 40px;
 }

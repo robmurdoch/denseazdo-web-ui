@@ -12,6 +12,11 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBarModule } from '@angular/material/snack-bar'
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'
+import { MatChipsModule } from '@angular/material/chips'
+import { MatCardModule } from '@angular/material/card';
+import { MatBadgeModule } from '@angular/material/badge';
+import { MatGridListModule } from '@angular/material/grid-list';
+import { FlexLayoutModule } from "@angular/flex-layout";
 
 const MaterialComponents = [
   MatButtonModule,
@@ -26,7 +31,12 @@ const MaterialComponents = [
   MatInputModule,
   MatSelectModule,
   MatSnackBarModule,
-  MatProgressSpinnerModule
+  MatProgressSpinnerModule,
+  MatChipsModule,
+  MatCardModule,
+  MatBadgeModule,
+  MatGridListModule,
+  FlexLayoutModule
 ]
 
 @NgModule({

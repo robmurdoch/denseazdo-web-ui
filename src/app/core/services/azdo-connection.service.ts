@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
-import { ConnectionInfo } from '../../shared/interfaces'
+import { ConnectionInfo } from '../shared/interfaces'
 
 @Injectable({
   providedIn: 'root'
@@ -8,27 +8,30 @@ import { ConnectionInfo } from '../../shared/interfaces'
 export class AzDoConnectionService {
   connections: ConnectionInfo[]
   currentConnection: ConnectionInfo
-  mostRecentApiVersion:string = "6.0";
+  mostRecentApiVersion: string = "6.0";
 
   constructor(
-  ) {
-    this.connections = JSON.parse(<string>localStorage.getItem('connections'))
-    if (this.connections === null)
-      this.connections = new Array<ConnectionInfo>();
-    this.currentConnection = {
-      url: "Connections",
-      apiVersion: "??"
-    }
-  }
-
-  ngOnInit(): void {
+  ) {    
+    this.currentConnection = { url: "Connections" };
     const storedConnections: ConnectionInfo[] = JSON.parse(<string>localStorage.getItem('connections'))
     if (storedConnections === null) {
       this.connections = new Array<ConnectionInfo>();
     }
     else {
       this.connections = storedConnections;
+      this.connections.forEach(connection => {
+        console.log(connection);
+        if (connection.selected) {
+          console.log("found initial connection");
+          this.currentConnection = connection;
+        }
+      });
     }
+  }
+
+  getCollectionName(connection:string):string{
+    return connection.substring(connection.lastIndexOf("/") + 1);
+    //handle case where url is Azure DevOps Services vs. On-Premise Server 
   }
 
   /**
@@ -37,9 +40,20 @@ export class AzDoConnectionService {
    * @param newConnection 
    */
   setConnection(newConnection: ConnectionInfo) {
-    var connection: ConnectionInfo | null = this.findConnection(newConnection.url)
-    if (connection) {
-      this.currentConnection = newConnection;
+    var foundConnection: ConnectionInfo | null = this.findConnection(newConnection.url)
+    if (foundConnection) {
+      this.connections.forEach(connection => {
+        if (connection.url.toLocaleLowerCase() === newConnection.url.toLocaleLowerCase()) {
+          // console.log(`${connection.url} now the current connection`);
+          connection.selected = true;
+          this.currentConnection = connection;
+        } else {
+          // console.log(`${connection.url} no longer the current connection`);
+          connection.selected = false;
+        }
+      });
+      // console.log(this.connections);
+      localStorage.setItem("connections", JSON.stringify(this.connections))
     }
   }
 
@@ -77,13 +91,13 @@ export class AzDoConnectionService {
    * @param result The results from REST API call or from a call to getApiVersionFromError
    * @param connectionAttempted The connection whose ApiVerion is updated
    */
-  apiVersionFound(result: any,connectionAttempted: ConnectionInfo): boolean{
+  apiVersionFound(result: any, connectionAttempted: ConnectionInfo): boolean {
 
     if (result.count) {
       //The happy path, an array of projects returned using the highest supported Api-Version known.
       connectionAttempted.apiVersion = this.mostRecentApiVersion;
       return true;
-    } else if (result === "6.0" ||result === "5.0" ||result === "4.0") {
+    } else if (result === "6.0" || result === "5.0" || result === "4.0") {
       //This is a downlevel API, supported api version extracted from the error message
       connectionAttempted.apiVersion = result;
       return true;
@@ -97,7 +111,7 @@ export class AzDoConnectionService {
    * If none of the above the error provided is returned  
    * @param error An HTTPResponseError from an attempted Azure DevOps REST API call
    */
-  getApiVersionFromError(error: any): Observable<any>{
+  getApiVersionFromError(error: any): Observable<any> {
     if (error.message.includes("The latest REST API version this server supports is 6.0")) {
       return of("6.0")
     } else if (error.message.includes("The latest REST API version this server supports is 5.0")) {

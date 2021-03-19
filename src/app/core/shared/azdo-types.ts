@@ -319,7 +319,7 @@ export interface IdentityProperty {
 }
 
 export interface Identity {
-    id?: number;
+    id?: string;
     descriptor?: string;
     subjectDescriptor?: string;
     providerDisplayName?: string;

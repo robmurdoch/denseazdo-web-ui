@@ -3,14 +3,17 @@ import { BrowserModule } from '@angular/platform-browser';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http'
 
-import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { MaterialModule } from './shared/material.module'
+import { MaterialModule } from './core/shared/material.module'
 
 import { NotFoundComponent } from './not-found/not-found.component';
 import { ConnectionDialogComponent } from './connection-dialog/connection-dialog.component';
-// import { CollectionComponent } from './collection/collection.component';
+import { CollectionComponent } from './collection/collection.component';
+import { ProjectComponent } from './project/project.component';
+import { StripNamePipe } from './collection/strip-name.pipe';
+import { CollectionSecurityComponent } from './collection/collection-security.component';
+import { FindingDialogComponent } from './finding-dialog/finding-dialog.component';
 // import { OrganizationComponent } from './organization/organization.component';
 
 
@@ -19,14 +22,16 @@ import { ConnectionDialogComponent } from './connection-dialog/connection-dialog
     AppComponent,
     NotFoundComponent,
     ConnectionDialogComponent,
-    // CollectionComponent,
-    // OrganizationComponent
+    CollectionComponent,
+    ProjectComponent,
+    StripNamePipe,
+    CollectionSecurityComponent,
+    FindingDialogComponent
   ],
   imports: [
     BrowserModule,
     FormsModule,
     ReactiveFormsModule,
-    AppRoutingModule,
     HttpClientModule,
     BrowserAnimationsModule,
     MaterialModule

@@ -1,10 +1,10 @@
-import { Component, OnInit, Optional, Inject } from '@angular/core';
+import { Component, Inject } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms'
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { catchError } from 'rxjs/operators';
 
-import { ConnectionInfo } from '../shared/interfaces';
-import { AzDoConnectionService } from '../core/services/azure-devops-connection.service';
+import { ConnectionInfo } from '../core/shared/interfaces';
+import { AzDoConnectionService } from '../core/services/azdo-connection.service';
 import { AzDoService } from '../core/services/azdo.service';
 import { SnackbarService } from '../core/services/snackbar.service'
 

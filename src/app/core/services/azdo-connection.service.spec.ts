@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 
-import { AzDoConnectionService } from './azure-devops-connection.service';
+import { AzDoConnectionService } from './azdo-connection.service';
 
 describe('AzDoConnectionService', () => {
   let service: AzDoConnectionService;
