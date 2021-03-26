@@ -1,8 +1,13 @@
-<h1 mat-dialog-title>Findings</h1>    
+<h1 mat-dialog-title>Findings</h1>
 <div mat-dialog-content>
-
-
-
+    <mat-list>
+        <mat-list-item *ngFor="let finding of data.findings" matTooltip="{{finding.rule.description}}">
+            <mat-icon mat-list-icon>error</mat-icon>
+            <div mat-line>{{finding.rule.name}}</div>
+            <div mat-line>Analyzed:{{finding.rule.detail}}</div>
+            <div mat-line>Found:{{finding.value}}</div>
+        </mat-list-item>
+    </mat-list>
 </div>
 <div mat-dialog-actions>
     <button mat-button (click)="onOkClick()" cdkFocusInitial>Ok</button>

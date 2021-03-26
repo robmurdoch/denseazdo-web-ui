@@ -53,6 +53,10 @@ export interface Rule {
      */
     name:string;
     /**
+     * Detail
+     */
+    detail:string;
+    /**
      * Description
      */
     description:string;

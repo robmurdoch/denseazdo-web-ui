@@ -17,6 +17,15 @@
         <mat-error *ngIf="inputToken?.invalid && (inputToken?.dirty || inputToken?.touched)">{{getTokenErrorMessages()}}</mat-error>
     </mat-form-field>
 
+    <div class="field-spacer"></div>
+
+    <mat-form-field appearance="fill">
+        <mat-label>Instance</mat-label>
+        <input id="instance" matInput required 
+            formControlName="instance">
+        <mat-error *ngIf="instance?.invalid && (instance?.dirty || instance?.touched)">{{getInstanceErrorMessages()}}</mat-error>
+    </mat-form-field>
+
 </div>
 <div mat-dialog-actions>
     <button mat-button (click)="onCancelClick()">Cancel</button>

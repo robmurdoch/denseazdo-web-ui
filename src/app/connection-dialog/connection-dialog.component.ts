@@ -14,6 +14,7 @@ import { SnackbarService } from '../core/services/snackbar.service'
 export interface DialogData {
   url: string;
   token: string;
+  instance: string;
 }
 
 @Component({
@@ -32,6 +33,10 @@ export class ConnectionDialogComponent {
     inputToken: [this.data.token, [
       Validators.required,
       Validators.minLength(40)
+    ]],
+    instance: [this.data.instance, [
+      Validators.required,
+      Validators.minLength(3)
     ]]
   });
 
@@ -53,6 +58,8 @@ export class ConnectionDialogComponent {
   //Some convience methods used in the view to referece the model
   get inputUrl() { return this.connectionForm.get('inputUrl') }
   get inputToken() { return this.connectionForm.get('inputToken') }
+  get instance() { return this.connectionForm.get('instance') }
+
   getUrlErrorMessages(): string | undefined {
     return this.inputUrl?.hasError('required') ? "Url is required" :
       this.inputUrl?.hasError('pattern') ? "Invalid url: http://host/collection or https://org.visualstudio.com" : "";
@@ -60,6 +67,10 @@ export class ConnectionDialogComponent {
   getTokenErrorMessages(): string | undefined {
     return this.inputToken?.hasError('required') ? "Token is required" :
       this.inputToken?.hasError('minlength') ? "Value must be at least 40 characters" : "";
+  }
+  getInstanceErrorMessages(): string | undefined {
+    return this.instance?.hasError('required') ? "Instance is required" :
+      this.instance?.hasError('minlength') ? "Value must be at least 3 characters, e.g. TFS" : "";
   }
 
   //Supports canceling the dialog without changing any state
@@ -96,7 +107,8 @@ export class ConnectionDialogComponent {
     if (this.connectionForm.valid) {
       var newConnection: ConnectionInfo = {
         url: this.inputUrl?.value,
-        token: this.inputToken?.value
+        token: this.inputToken?.value,
+        instanceName: this.instance?.value
       }
       this.showSpinner = true;
       this.azDoService.tryConnection(newConnection)

@@ -323,6 +323,7 @@ export interface Identity {
     descriptor?: string;
     subjectDescriptor?: string;
     providerDisplayName?: string;
+    customDisplayName?: string;
     isActive?: boolean;
     isContainer?: boolean;
     members: string[];

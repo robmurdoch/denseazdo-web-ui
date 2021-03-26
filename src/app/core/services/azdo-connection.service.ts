@@ -20,9 +20,9 @@ export class AzDoConnectionService {
     else {
       this.connections = storedConnections;
       this.connections.forEach(connection => {
-        console.log(connection);
+        // console.log(connection);
         if (connection.selected) {
-          console.log("found initial connection");
+          // console.log("found initial connection");
           this.currentConnection = connection;
         }
       });

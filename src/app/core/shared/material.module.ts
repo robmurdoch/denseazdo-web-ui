@@ -16,6 +16,7 @@ import { MatChipsModule } from '@angular/material/chips'
 import { MatCardModule } from '@angular/material/card';
 import { MatBadgeModule } from '@angular/material/badge';
 import { MatGridListModule } from '@angular/material/grid-list';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { FlexLayoutModule } from "@angular/flex-layout";
 
 const MaterialComponents = [
@@ -36,6 +37,7 @@ const MaterialComponents = [
   MatCardModule,
   MatBadgeModule,
   MatGridListModule,
+  MatTooltipModule,
   FlexLayoutModule
 ]
 

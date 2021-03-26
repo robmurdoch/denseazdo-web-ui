@@ -44,7 +44,6 @@ export class AzDoService {
       let url = `${connection.url}/_apis/securitynamespaces?api-version=${connection.apiVersion}`
       return this.http.get<Collection<SecurityNamespace>>(url, this.getHttpHeaders(connection))
         .pipe(
-          tap(_ => this.log('fetching security namespaces')),
           catchError(this.handleError<Collection<SecurityNamespace>>('getSecurityNamespaces', {}))
         );
     }
@@ -59,7 +58,6 @@ export class AzDoService {
     let url = `${connection.url}/_apis/identities?searchFilter=General&filterValue=Project%20Collection%20Valid%20Users&queryMembership=direct&api-version=${connection.apiVersion}`
     return this.http.get<Collection<Identity>>(url, this.getHttpHeaders(connection))
       .pipe(
-        tap(_ => this.log('fetching everyone group')),
         catchError(this.handleError<Collection<Identity>>('getProjectValidUsersGroup', {}))
       );
   }
@@ -71,7 +69,6 @@ export class AzDoService {
     let url = `${connection.url}/_apis/identities?identityIds=${memberIds.join()}&queryMembership=direct&api-version=${connection.apiVersion}`
     return this.http.get<Collection<Identity>>(url, this.getHttpHeaders(connection))
       .pipe(
-        tap(_ => this.log('fetching identities')),
         catchError(this.handleError<Collection<Identity>>('getIdentities', {}))
       );
   }
@@ -83,7 +80,6 @@ export class AzDoService {
       let url = `${connection.url}/_apis/projects?api-version=${connection.apiVersion}`
       return this.http.get<Collection<ProjectInfo>>(url, this.getHttpHeaders(connection))
         .pipe(
-          tap(_ => this.log('fetched projects')),
           catchError(this.handleError<Collection<ProjectInfo>>('getProjects', {}))
         );
     }

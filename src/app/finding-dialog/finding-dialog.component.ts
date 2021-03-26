@@ -20,6 +20,7 @@ export class FindingDialogComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
+    console.log(this.data);
     //Might have to do something here
   }
 
