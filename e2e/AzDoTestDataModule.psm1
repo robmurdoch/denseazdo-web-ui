@@ -1,23 +1,167 @@
-Function New-AzDoCollections {
+Function Get-AzDOServerConnection {
+    param (
+        [Parameter(Mandatory = $true,
+            ValueFromPipeline,
+            HelpMessage = 'Enter the Url to the Azure DevOps Server Instance with Collection, e.g. http://myserver/mycollection.')]
+        [string]$Uri
+    )
+
+    process {        
+        $homePageUri = [System.Uri]$Uri
+        $homePage = Invoke-WebRequest -Uri $homePageUri -Method Get -UseDefaultCredentials -SessionVariable az
+
+        return [PSCustomObject]@{
+            Uri        = $homePageUri
+            WebSession = $az
+        }
+    }
+}
+
+function Set-AzDOTeamProject {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true,
+            HelpMessage = 'Object returned from Get-AzDOServerConnection.')]
+        [object]$Connection,
+
+        [Parameter(Mandatory = $true,
+            HelpMessage = 'Object with Name and Description properties.')]
+        [object]$Project
+    )
+
+    $uri = "$($Connection.Uri)/_apis/projects?api-version=6.0"
+    # TODO Query with ContinuationToken for sites with a lot of Projects
+    $projectsResponse = Invoke-RestMethod -Method Get -Uri $uri -UseDefaultCredentials
+    
+    $found = $false
+    foreach ($p in $projectsResponse.value) {
+        if ($p.Name -like $Project.Name) {
+            $found = $true
+            Write-Verbose "$($Project.Name) already exists"
+            return $p
+        }
+    }
+    Write-Verbose "$($Project.Name) does not exist"
+    if (!$found) {
+        # TODO Support token based authentication
+        return New-AzDOTeamProject -Connection $connection -Project $project
+    }
+}
+
+
+function New-AzDOTeamProject {
+    [CmdletBinding(SupportsShouldProcess)]
+    param(
+        [Parameter(Mandatory = $true,
+            HelpMessage = 'Object returned from Get-AzDOServerConnection.')]
+        [object]$Connection,
+
+        [Parameter(Mandatory = $true,
+            HelpMessage = 'Object with Name and Description properties.')]
+        [object]$Project
+    )
+
+    $body = @{
+        name         = $Project.Name
+        description  = $Project.Description
+        capabilities = @{
+            versioncontrol  = @{
+                sourceControlType = "Git"
+            }
+            processTemplate = @{
+                templateTypeId = "6b724908-ef14-45cf-84f8-768b5384da45"
+            }
+        }
+    } | ConvertTo-Json
+
+    $uri = "$($Connection.Uri)/_apis/projects?api-version=6.0"
+    if ($PSCmdlet.ShouldProcess($Project.Name)) {
+        $operation = Invoke-RestMethod -Method Post -Uri $uri -Body $body -UseDefaultCredentials -ContentType 'application/json'
+        $result = Wait-Operation -Operation $operation
+        Write-Verbose "Result: $result"
+
+        if ($result -eq 'failed') {
+            throw 'Project creation failed'
+        }
+        else {
+            return Set-AzDOTeamProject -Connection $Connection -Project $Project
+        }
+    }
+}
+
+Function Private:Wait-Operation {
+    param(
+        [Parameter(Mandatory = $true,
+            HelpMessage = 'Operation returned from long running AzDO Rest Api operations.')]
+        [object]$Operation
+    )
+
+    $uri = "$($Operation.url)?api-version=6.0"
+    
+    for (($status = $Operation.status); (($status -ne 'succeeded') -and ($status -ne 'failed')); $(Start-Sleep -Seconds 1)) {
+        Write-Host "$status..." -NoNewline
+        $operation = Invoke-RestMethod -Method Get -Uri $uri -UseDefaultCredentials -ContentType 'application/json'
+        $status = $Operation.status
+        Write-Verbose "Wait Status: $status"
+    }
+    return $status
+}
+
+Function Initialize-AzDOTeamProject {
+    param(
+        [Parameter(Mandatory = $true, 
+            HelpMessage = 'Name of the project.')]
+        [string]$Name,
+    
+        [Parameter(Mandatory = $false, 
+            HelpMessage = 'Descriptiong for the project.')]
+        [string]$Description
+    )
+
+    process {
+        return [PSCustomObject]@{
+            Name        = $Name
+            Description = $Description
+        }
+    }
+}
+
+Function Get-CSRFCookie {
+    param (
+        [Parameter(Mandatory = $true,
+            ValueFromPipeline,
+            HelpMessage = 'Object returned from Get-AzDOServerConnection.')]
+        [object]$AzDOServerConnection
+    )
+    
+    process {
+        foreach ($cookie in $AzDOServerConnection.WebSession.Cookies.GetCookies($AzDOServerConnection.Uri)) {
+            if ($cookie.Name -eq '__RequestVerificationToken') {
+                $csrfCookie = $cookie
+            }
+        }
+        return $csrfCookie
+    }
+}
+
+Function Set-AzDoTestData {
     [CmdletBinding(SupportsShouldProcess)]
     param (
         [Parameter(Mandatory = $true,
             ParameterSetName = 'Default',
-            HelpMessage = 'Enter a value that uniquely identifies an instance, use Azure DevOps Services for SaaS.',
-            Position = 0)]
+            HelpMessage = 'Enter a value that uniquely identifies an instance, use Azure DevOps Services for SaaS.')]
         [string]$InstanceName,
+        
+        [Parameter(Mandatory = $true,
+            ParameterSetName = 'Default',
+            HelpMessage = 'Enter the Url to the Azure DevOps instance, e.g. http://myserver/ or https://dev.azure.com.')]
+        [string]$Instance,
         
         [Parameter(Mandatory = $false,
             ParameterSetName = 'Default',
             HelpMessage = 'Enter a comma separated list of Collections names.',
-            Position = 1)]
-        [string[]]$Collections,
-        
-        [Parameter(Mandatory = $false,
-            ParameterSetName = 'Default',
-            HelpMessage = 'Enter the Url to the Azure DevOps instance, e.g. http://myserver/ or https://dev.azure.com.',
-            Position = 3)]
-        [string]$Instance
+            ValueFromPipeline )]
+        [string[]]$Collections
     )
 
     begin {
@@ -119,7 +263,7 @@ Function New-AzDoCollections {
         $projectGroups += [PSCustomObject]@{
             Id              = ""
             Name            = "DevOpsEngineers"
-            AzDoName        = "DevOps Engineers"
+            AzDoName        = "DevOps Engineeers"
             Description     = "Maps to AzDo Project DevOps Engineers"
             AzDoDescription = "Should only contain DevOpsEngineers"
         }
@@ -209,43 +353,43 @@ Function New-AzDoCollections {
     }
 
     process {
-        foreach ($group in $collectionGroups) {
-            $groupName = "$InstanceName$($group.Name)"
-            New-SecurityGroup -GroupName $groupName -Group $group
-        }
+        # foreach ($group in $collectionGroups) {
+        #     $groupName = "$InstanceName$($group.Name)"
+        #     New-SecurityGroup -GroupName $groupName -Group $group
+        # }
 
-        foreach ($project in $Projects) {            
-            foreach ($group in $projectGroups) {
-                $groupName = "$InstanceName$($project.Name)$($group.Name)"
-                New-SecurityGroup -GroupName $groupName -Group $group
-            }
-        }
+        # foreach ($project in $Projects) {            
+        #     foreach ($group in $projectGroups) {
+        #         $groupName = "$InstanceName$($project.Name)$($group.Name)"
+        #         New-SecurityGroup -GroupName $groupName -Group $group
+        #     }
+        # }
 
-        foreach ($user in $users  ) {
-            New-SampleUser -User $user
-        }
+        # foreach ($user in $users  ) {
+        #     New-SampleUser -User $user
+        # }
 
-        foreach ($collection in $Collections) {
-            foreach ($project in $Projects) {
-                $project.Id = ''
-            }
-            foreach ($group in $collectionGroups) {
-                New-AzDoGroup -CollectionUrl "$Instance/$collection" -Group $group
-            }
-            foreach ($project in $Projects) {
-                New-AzDOTeamProject -CollectionUrl "$Instance/$collection" -Project $project
-                foreach ($group in $projectGroups) {
-                    New-AzDoGroup -CollectionUrl "$Instance/$collection" -Project $project -Group $group
-                }
-            }
-        }
+        # foreach ($collection in $Collections) {
+        #     foreach ($project in $Projects) {
+        #         $project.Id = ''
+        #     }
+        #     foreach ($group in $collectionGroups) {
+        #         New-AzDoGroup -CollectionUrl "$Instance/$collection" -Group $group
+        #     }
+        #     foreach ($project in $Projects) {
+        #         New-AzDOTeamProject -CollectionUrl "$Instance/$collection" -Project $project
+        #         foreach ($group in $projectGroups) {
+        #             New-AzDoGroup -CollectionUrl "$Instance/$collection" -Project $project -Group $group
+        #         }
+        #     }
+        # }
     }
 
     end {
         # One-time post processing for the function
         # Write-Host "Finishing Up"
     }
-<#
+    <#
 .SYNOPSIS
 
 Adds team projects and groups to Azure DevOps organizations.
@@ -282,146 +426,4 @@ Set-Item
 #>
 }
 
-function New-AzDoGroup {
-    [CmdletBinding(SupportsShouldProcess)]
-    param(
-        $CollectionUrl,
-        $Project = $null,
-        $Group
-    )
-    
-    $homePageUri = [System.Uri]$CollectionUrl
-    $homePage = Invoke-WebRequest -Uri $homePageUri -Method Get -UseDefaultCredentials -SessionVariable az
-    
-    foreach ($cookie in $az.Cookies.GetCookies($homePageUri)) {
-        if ($cookie.Name -eq '__RequestVerificationToken') {
-            $csrf = $cookie.Value
-        }
-    }
-
-    $body = @{
-        name                       = $Group.AzDoName
-        description                = $Group.Description
-        tfid                       = ""
-        __RequestVerificationToken = $csrf
-    } | ConvertTo-Json
-
-    if ($null -eq $Project) {
-        $uri = [System.Uri]"$CollectionUrl/_api/_identity/ReadScopedApplicationGroupsJson?__v=5"
-    }
-    else {
-        $uri = [System.Uri]"$CollectionUrl/$($Project.Id)/_api/_identity/ReadScopedApplicationGroupsJson?__v=5"
-    }
-    $identityResponse = Invoke-RestMethod -Method Get -Uri $uri -UseDefaultCredentials -WebSession $az
-
-    $found = $false
-    foreach ($i in $identityResponse.identities) {
-        if ($i.FriendlyDisplayName -like $Group.AzDoName) {
-            $found = $true
-            Write-Verbose "$($i.FriendlyDisplayName) already exists"
-        }
-    }
-    if (!$found) {
-        if ($null -eq $Project) {
-            $uri = "$CollectionUrl/_api/_identity/ManageGroup?__v=5"
-        }
-        else {
-            $uri = "$CollectionUrl/$($Project.Id)/_api/_identity/ManageGroup?__v=5"
-        }
-        # TODO Support token based authentication and AzDOServices Graph
-        if ($PSCmdlet.ShouldProcess($Group.Name)) {
-            $newGroupResponse = Invoke-RestMethod -Method Post -Uri $uri -Body $body -ContentType 'application/json' -UseDefaultCredentials -WebSession $az
-        }
-    }
-}
-
-
-function New-AzDOTeamProject {
-    [CmdletBinding(SupportsShouldProcess)]
-    param(
-        $CollectionUrl,
-        $Project
-    )
-
-    $body = @{
-        name         = $Project.Name
-        description  = $Project.Description
-        capabilities = @{
-            versioncontrol  = @{
-                sourceControlType = "Git"
-            }
-            processTemplate = @{
-                templateTypeId = "6b724908-ef14-45cf-84f8-768b5384da45"
-            }
-        }
-    } | ConvertTo-Json
-
-    $uri = "$CollectionUrl/_apis/projects?api-version=6.0"
-    # TODO Query with ContinuationToken for sites with a lot of Projects
-    $projectsResponse = Invoke-RestMethod -Method Get -Uri $uri -UseDefaultCredentials
-    
-    $found = $false
-    foreach ($p in $projectsResponse.value) {
-        if ($p.Name -like $Project.Name) {
-            $found = $true
-            $Project.Id = $p.id
-            Write-Verbose "$($Project.Name) already exists"
-        }
-    }
-    if (!$found) {
-        # TODO Support token based authentication
-        if ($PSCmdlet.ShouldProcess($Project.Name)) {
-            $projectResponse = Invoke-RestMethod -Method Post -Uri $uri -Body $body -UseDefaultCredentials -ContentType 'application/json'
-            $Project.Id = $projectResponse.id
-        }
-    }
-}
-
-function New-SecurityGroup {
-    [CmdletBinding(SupportsShouldProcess)]
-    param(
-        $GroupName,
-        $Group
-    )
-    try {
-        if (Get-LocalGroup -Name $GroupName -ErrorAction Stop) {
-            Write-Verbose "$GroupName already exists"
-            # Remove-LocalGroup -Name $groupName
-        }
-    }
-    catch [Microsoft.PowerShell.Commands.GroupNotFoundException] {
-        Write-Verbose "$GroupName did not exist"
-        if ($PSCmdlet.ShouldProcess($GroupName)) {
-            New-LocalGroup -Name $GroupName -Description $Group.Description -WhatIf:$WhatIfPreference
-        }
-        #"$($PSItem.Exception)"
-    }
-}
-
-function New-SampleUser {
-    [CmdletBinding(SupportsShouldProcess)]
-    param(
-        $User
-    )
-    try {
-        if (Get-LocalUser -Name $User.Name -ErrorAction Stop) {
-            Write-Verbose "$($User.Name) already exists"
-            # Remove-LocalGroup -Name $groupName
-        }
-    }
-    catch [Microsoft.PowerShell.Commands.UserNotFoundException] {
-        Write-Verbose "$($User.Name) did not exist"
-        if ($PSCmdlet.ShouldProcess($User.Name)) {
-            $password = ConvertTo-SecureString "PurpleCode" -AsPlainText -Force
-            New-LocalUser `
-                -Name $User.Name `
-                -Description $User.Description `
-                -FullName $User.FullName `
-                -Password  $password `
-                -AccountNeverExpires `
-                -PasswordNeverExpires `
-                -UserMayNotChangePassword
-        }
-        #"$($PSItem.Exception)"
-    }
-}
+Export-ModuleMember -Function Get-AzDOServerConnection, Set-AzDOTeamProject, Initialize-AzDOTeamProject

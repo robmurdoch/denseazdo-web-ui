@@ -14,6 +14,7 @@ import { ProjectComponent } from './project/project.component';
 import { StripNamePipe } from './collection/strip-name.pipe';
 import { CollectionSecurityComponent } from './collection/collection-security.component';
 import { FindingDialogComponent } from './finding-dialog/finding-dialog.component';
+import { ProjectSecurityComponent } from './project/project-security.component';
 // import { OrganizationComponent } from './organization/organization.component';
 
 
@@ -26,7 +27,8 @@ import { FindingDialogComponent } from './finding-dialog/finding-dialog.componen
     ProjectComponent,
     StripNamePipe,
     CollectionSecurityComponent,
-    FindingDialogComponent
+    FindingDialogComponent,
+    ProjectSecurityComponent
   ],
   imports: [
     BrowserModule,

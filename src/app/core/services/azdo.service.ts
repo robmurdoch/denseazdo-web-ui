@@ -52,13 +52,22 @@ export class AzDoService {
     }
   }
 
+  getProjectValidUsersGroup(projectName: string): Observable<Collection<Identity>> {
+    var connection = this.azDoConnectionService.currentConnection;
+    let url = `${connection.url}/_apis/identities?searchFilter=General&filterValue=[${projectName}]\\Project%20Valid%20Users&queryMembership=direct&api-version=${connection.apiVersion}`
+    return this.http.get<Collection<Identity>>(url, this.getHttpHeaders(connection))
+      .pipe(
+        catchError(this.handleError<Collection<Identity>>('getProjectValidUsersGroup', {}))
+      );
+  }
+
   // TODO: get the Special EveryoneApplicationGroup instead
   getProjectCollectionValidUsersGroup(): Observable<Collection<Identity>> {
     var connection = this.azDoConnectionService.currentConnection;
     let url = `${connection.url}/_apis/identities?searchFilter=General&filterValue=Project%20Collection%20Valid%20Users&queryMembership=direct&api-version=${connection.apiVersion}`
     return this.http.get<Collection<Identity>>(url, this.getHttpHeaders(connection))
       .pipe(
-        catchError(this.handleError<Collection<Identity>>('getProjectValidUsersGroup', {}))
+        catchError(this.handleError<Collection<Identity>>('getProjectCollectionValidUsersGroup', {}))
       );
   }
 

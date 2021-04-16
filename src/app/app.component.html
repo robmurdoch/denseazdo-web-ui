@@ -64,17 +64,13 @@
             </mat-card-subtitle>
           </mat-card-header>
           <mat-card-content>
-            <mat-chip-list aria-label="Results">
-              <mat-chip matBadge="15" matBadgeColor="warn">OOTB Security Groups</mat-chip>
-              <mat-chip>Custom Groups</mat-chip>
-              <mat-chip>Teams</mat-chip>
-            </mat-chip-list>
+            <app-project-security #projectSecurityChildComponent [project]="project"></app-project-security>
           </mat-card-content>
           <mat-card-actions>
-            <button mat-button color="Primary" aria-label="Save">
+            <button mat-button color="Primary" (click)="projectSecurityChildComponent.download()" aria-label="Save">
               <mat-icon>save_alt</mat-icon>Save
             </button>
-            <button mat-button color="Primary" aria-label="Save">
+            <button mat-button color="Primary" (click)="projectSecurityChildComponent.refresh()" aria-label="Refresh">
               <mat-icon>refresh</mat-icon>refresh
             </button>
           </mat-card-actions>

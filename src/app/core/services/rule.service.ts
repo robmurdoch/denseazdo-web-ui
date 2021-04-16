@@ -18,9 +18,17 @@ export class RuleService {
 
   getUnexpectedCollectionGroupMemberRule(detail: string): Rule {
     return {
-      name: "Unexpected group member",
+      name: "Unexpected collection-level group member (Course Grained)",
       detail: detail,
-      description: "Security groups defined at the collection level should be well-known and examined by this tool."
+      description: "Security groups defined at the collection level should be well-known and contain windows or active directory groups."
+    }
+  }
+
+  getUnexpectedProjectGroupMemberRule(detail: string): Rule {
+    return {
+      name: "Unexpected project-level group member (Course Grained)",
+      detail: detail,
+      description: "Security groups defined at thep project level should be well-known and contain only collection level groups."
     }
   }
 }

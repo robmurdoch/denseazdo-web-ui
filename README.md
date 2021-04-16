@@ -40,3 +40,5 @@ Add the maxQueryString to the requestLimits setting
       - .\e2e\New-AzDoTestData.psm1
     Import-Module .\New-AzDoTestData.psm1 -Force
     New-AzDoCollectionGroups -InstanceName TFS -Projects HR, Legal, SkunkWorks
+
+    KWnbR5Hsw64
