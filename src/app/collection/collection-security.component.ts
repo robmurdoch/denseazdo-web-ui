@@ -10,6 +10,7 @@ import { Finding, Rule } from '../core/shared/interfaces';
 import { SnackbarService } from '../core/services/snackbar.service';
 import { FindingDialogComponent } from '../finding-dialog/finding-dialog.component';
 import { RuleService } from '../core/services/rule.service';
+import { UtilityService } from '../core/services/utility.service';
 
 @Component({
   selector: 'app-collection-security',
@@ -32,11 +33,13 @@ export class CollectionSecurityComponent {
     private snackBarService: SnackbarService,
     private ruleService: RuleService,
     public dialog: MatDialog,
+    private utilityService: UtilityService
   ) {
   }
 
   ngOnInit(): void {
     this.showCollectionSecuritySpinner = true;
+    this.findings = [];
     from(this.azdoService.getProjectCollectionValidUsersGroup()).pipe(
       concatMap(topLevelGroupResponse => {
         const topLevelGroup: Identity = topLevelGroupResponse?.value![0];
@@ -80,6 +83,17 @@ export class CollectionSecurityComponent {
       memberIds = memberIds.concat(identity.memberIds!)
     });
     return memberIds;
+  }
+
+  refresh() {
+    this.ngOnInit();
+  }
+
+  download() {
+    const collectionName = this.azdoConnectionService.getCollectionName(this.azdoConnectionService.currentConnection.url);
+    this.utilityService.downloadCsvFile(
+      this.ruleService.getCsvArray(this.findings),
+      `${collectionName}-SecurityGroups.csv`)
   }
 
   private checkProjectCollectionValidUsers() {

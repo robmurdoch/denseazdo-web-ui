@@ -3,7 +3,8 @@
 </div>
 
 <mat-chip-list aria-label="Results" *ngIf="!showProjectSecuritySpinner" [selectable]="true">
-    <mat-chip matBadge="{{securityFindingsCount}}" matBadgeColor="warn" [matBadgeHidden]="!securityFindingsCount" (click)="openFindingsDialog('securityFindings')">Security
+    <mat-chip matBadge="{{securityFindingsCount}}" matBadgeColor="warn" [matBadgeHidden]="!securityFindingsCount"
+        (click)="openFindingsDialog('securityFindings')">Security
         Groups</mat-chip>
-    <mat-chip>Custom Security Groups WHy?</mat-chip>
+    <mat-chip>Security</mat-chip>
 </mat-chip-list>

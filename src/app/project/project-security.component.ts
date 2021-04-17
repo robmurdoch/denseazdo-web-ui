@@ -10,6 +10,7 @@ import { Finding, Rule } from '../core/shared/interfaces';
 import { SnackbarService } from '../core/services/snackbar.service';
 import { FindingDialogComponent } from '../finding-dialog/finding-dialog.component';
 import { RuleService } from '../core/services/rule.service';
+import { UtilityService } from '../core/services/utility.service';
 
 @Component({
   selector: 'app-project-security',
@@ -34,6 +35,7 @@ export class ProjectSecurityComponent implements OnInit {
     private snackBarService: SnackbarService,
     private ruleService: RuleService,
     public dialog: MatDialog,
+    private utilityService: UtilityService
   ) {
     this.project = {}
   }
@@ -86,27 +88,15 @@ export class ProjectSecurityComponent implements OnInit {
     return memberIds;
   }
 
-  refresh(){
+  refresh() {
     this.ngOnInit();
   }
 
-  download(){
-    let csv: string[] = [];
-    csv.push('Rule,Rule Description,Group,Member Id, Member Name');
-    this.findings.forEach(finding =>{
-      csv.push(`"${finding.rule.name}","${finding.rule.description}","${finding.rule.detail}","${finding.id}","${finding.value}"`);
-    });
-    const csvArray = csv.join('\r\n');
-  
-    const a = document.createElement('a');
-    const blob = new Blob([csvArray], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-  
-    a.href = url;
-    a.download = 'myFile.csv';
-    a.click();
-    window.URL.revokeObjectURL(url);
-    a.remove();
+  download() {
+    const collectionName = this.azdoConnectionService.getCollectionName(this.azdoConnectionService.currentConnection.url);
+    this.utilityService.downloadCsvFile(
+      this.ruleService.getCsvArray(this.findings),
+      `${collectionName}-${this.project.name}-SecurityGroups.csv`)
   }
 
   private checkProjectValidUsers() {
