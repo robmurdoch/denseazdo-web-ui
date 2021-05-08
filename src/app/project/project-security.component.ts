@@ -1,9 +1,9 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { Observable, from, of, zip, forkJoin } from 'rxjs';
+import { Observable, from, of, zip, forkJoin, concat } from 'rxjs';
 import { concatMap } from 'rxjs/operators';
 import { saveAs } from 'file-saver'
-import { Collection, ProjectInfo, SecurityNamespace, Identity } from '../core/shared/azdo-types';
+import { Collection, ProjectInfo, SecurityNamespace, Identity, Folder } from '../core/shared/azdo-types';
 import { AzDoService } from '../core/services/azdo.service';
 import { AzDoConnectionService } from '../core/services/azdo-connection.service';
 import { Finding, Rule } from '../core/shared/interfaces';
@@ -19,7 +19,6 @@ import { UtilityService } from '../core/services/utility.service';
 })
 export class ProjectSecurityComponent implements OnInit {
   @Input() project: ProjectInfo;
-
   showProjectSecuritySpinner: boolean = false;
   showSecurityFindingsBadge: boolean = false;
   securityFindingsCount: number = 0;
@@ -27,6 +26,8 @@ export class ProjectSecurityComponent implements OnInit {
   projectValidUsersGroup: Collection<Identity> = {};
   projectValidUsersGroupMembers: Collection<Identity> = {};
   projectValidUsersGroupMembersMembers: Collection<Identity> = {};
+  securityNamespaces: Collection<SecurityNamespace> = {};
+  projectReleaseFolders: Collection<Folder> = {}
   findings: Finding[] = [];
 
   constructor(
@@ -51,19 +52,32 @@ export class ProjectSecurityComponent implements OnInit {
           this.azdoService.getIdentities(topLevelGroup.memberIds)
         ]);
       }),
-      concatMap(([response1, response2]) => {
-        // const secondLevelGroupMembers: string[] = 
+      concatMap(([topLevelGroupResponse, topLevelGroupMembers]) => {
         return forkJoin([
-          of(response1),
-          of(response2),
-          this.azdoService.getIdentities(this.combineMemberIds(response2?.value!))
+          of(topLevelGroupResponse), of(topLevelGroupMembers),
+          this.azdoService.getIdentities(this.combineMemberIds(topLevelGroupMembers?.value!))
         ]);
       }),
+      concatMap(([topLevelGroupResponse, topLevelGroupMembers, secondLevelGroupMembers]) => {
+        return forkJoin([
+          of(topLevelGroupResponse), of(topLevelGroupMembers), of(secondLevelGroupMembers),
+          this.azdoService.getSecurityNamespaces()
+        ])
+      }),
+      concatMap(([topLevelGroupResponse, topLevelGroupMembers, secondLevelGroupMembers, securityNamespaces]) => {
+        return forkJoin([
+          of(topLevelGroupResponse), of(topLevelGroupMembers), of(secondLevelGroupMembers), of(securityNamespaces),
+          this.azdoService.getReleaseFolders(this.project?.name!)
+        ])
+      })
     ).subscribe(values => {
       this.projectValidUsersGroup = values[0];
       this.projectValidUsersGroupMembers = values[1];
       this.projectValidUsersGroupMembersMembers = values[2];
+      this.securityNamespaces = values[3];
+      this.projectReleaseFolders = values[4];
       this.checkProjectValidUsers();
+      this.checkReleaseFolderSecurity();
       this.securityFindingsCount = this.findings.length;
       this.showProjectSecuritySpinner = false
     });
@@ -201,5 +215,32 @@ export class ProjectSecurityComponent implements OnInit {
         )
       )
     });
+  }
+
+  private checkReleaseFolderSecurity() {
+    const releaseManagementSecurityNamespace = this.azdoService.getSecurityNamespace(
+      "c788c23e-1b46-4162-8f5e-d7585343b5de",
+      this.securityNamespaces);
+
+    const releasePermissionBits = releaseManagementSecurityNamespace.actions;
+    console.log(releasePermissionBits);
+    console.log(this.projectReleaseFolders)
+    this.projectReleaseFolders.value?.forEach(folder => {
+      const aclResponse = this.azdoService.getAccessControlLists(
+        releaseManagementSecurityNamespace.namespaceId!,
+        `${this.project.id}${this.utilityService.swapSlashes(folder.path)}`
+      ).subscribe(acls => {
+        acls.value?.forEach(acl => {
+          this.checkProjectReleaseFolder(folder, acl);
+        });
+      })
+
+    });
+
+  }
+
+  private checkProjectReleaseFolder(folder: Folder, acl: any): void {
+    console.log(folder);
+    console.log(acl);
   }
 }

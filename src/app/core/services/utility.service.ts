@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { Collection, SecurityNamespace } from '../shared/azdo-types'
 
 @Injectable({
   providedIn: 'root'
@@ -16,5 +17,9 @@ export class UtilityService {
     a.click();
     window.URL.revokeObjectURL(url);
     a.remove();
+  }
+
+  swapSlashes(source: string): string{
+    return source.replace(/\\/g,'/');
   }
 }

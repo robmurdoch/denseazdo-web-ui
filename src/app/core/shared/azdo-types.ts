@@ -333,3 +333,21 @@ export interface Identity {
     resourceVersion?: number;
     metaTypeId?: number;
 }
+
+export interface IdentityRef {
+    descriptor?: string;
+    displayName?: string;
+    id?: string;
+    imageUrl: string;
+    uniqueName?: string;
+    url?: string;
+}
+
+export interface Folder{
+    createdBy?:IdentityRef;
+    createdOn:string;
+    description?:string;
+    lastChangedBy?:IdentityRef;
+    lastChangedDate:string;
+    path:string;
+}
