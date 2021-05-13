@@ -52,13 +52,6 @@ export class AzDoService {
     }
   }
 
-  getSecurityNamespace(namespaceId: string, cachedNamespaces: Collection<SecurityNamespace>): SecurityNamespace {
-    const securityNamespace = cachedNamespaces.value?.find(
-      securityNamespace => securityNamespace?.namespaceId === namespaceId
-    )
-    return securityNamespace!;
-  }
-
   /**
    * Get the folder heirarchy
    * https://docs.microsoft.com/en-us/rest/api/azure/devops/release/folders/list?view=azure-devops-rest-6.0
@@ -102,7 +95,7 @@ export class AzDoService {
   getAccessControlLists(namespace: string, token: string): Observable<Collection<any>> {
     var connection = this.azDoConnectionService.currentConnection;
     if (connection) {
-      let url = `${connection.url}/_apis/accesscontrollists/${namespace}?token=${token}&api-version=${connection.apiVersion}&includeextendedinfo=true`
+      let url = `${connection.url}/_apis/accesscontrollists/${namespace}?token=${token}&includeextendedinfo=true&recurse=true&api-version=${connection.apiVersion}`
       console.log(url);
       return this.http.get<Collection<any>>(url, this.getHttpHeaders(connection))
         .pipe(

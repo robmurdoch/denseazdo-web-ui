@@ -11,6 +11,7 @@ import { SnackbarService } from '../core/services/snackbar.service';
 import { FindingDialogComponent } from '../finding-dialog/finding-dialog.component';
 import { RuleService } from '../core/services/rule.service';
 import { UtilityService } from '../core/services/utility.service';
+import { AzDoCacheService } from '../core/services/azdo-cache.service';
 
 @Component({
   selector: 'app-project-security',
@@ -22,60 +23,72 @@ export class ProjectSecurityComponent implements OnInit {
   showProjectSecuritySpinner: boolean = false;
   showSecurityFindingsBadge: boolean = false;
   securityFindingsCount: number = 0;
-  // securityNamespaces: Collection<SecurityNamespace> = {};
+  securityNamespaces: Collection<SecurityNamespace> = {};
   projectValidUsersGroup: Collection<Identity> = {};
   projectValidUsersGroupMembers: Collection<Identity> = {};
   projectValidUsersGroupMembersMembers: Collection<Identity> = {};
-  securityNamespaces: Collection<SecurityNamespace> = {};
   projectReleaseFolders: Collection<Folder> = {}
+  projectReleaseFolderAcls: any;
   findings: Finding[] = [];
 
   constructor(
     private azdoConnectionService: AzDoConnectionService,
     private azdoService: AzDoService,
+    private azdoCacheService: AzDoCacheService,
     private snackBarService: SnackbarService,
     private ruleService: RuleService,
     public dialog: MatDialog,
     private utilityService: UtilityService
   ) {
     this.project = {}
+    this.securityNamespaces = this.azdoCacheService.securityNamespaces;
   }
 
   ngOnInit(): void {
     this.showProjectSecuritySpinner = true;
     this.findings = [];
+
     from(this.azdoService.getProjectValidUsersGroup(this.project?.name!)).pipe(
       concatMap(topLevelGroupResponse => {
         const topLevelGroup: Identity = topLevelGroupResponse?.value![0];
         return forkJoin([
           of(topLevelGroupResponse),
-          this.azdoService.getIdentities(topLevelGroup.memberIds)
+          this.azdoService.getIdentities(
+            topLevelGroup.memberIds
+            )
         ]);
       }),
       concatMap(([topLevelGroupResponse, topLevelGroupMembers]) => {
         return forkJoin([
           of(topLevelGroupResponse), of(topLevelGroupMembers),
-          this.azdoService.getIdentities(this.combineMemberIds(topLevelGroupMembers?.value!))
+          this.azdoService.getIdentities(
+            this.combineMemberIds(topLevelGroupMembers?.value!)
+            )
         ]);
       }),
       concatMap(([topLevelGroupResponse, topLevelGroupMembers, secondLevelGroupMembers]) => {
         return forkJoin([
           of(topLevelGroupResponse), of(topLevelGroupMembers), of(secondLevelGroupMembers),
-          this.azdoService.getSecurityNamespaces()
+          this.azdoService.getReleaseFolders(
+            this.project?.name!
+            )
         ])
       }),
-      concatMap(([topLevelGroupResponse, topLevelGroupMembers, secondLevelGroupMembers, securityNamespaces]) => {
+      concatMap(([topLevelGroupResponse, topLevelGroupMembers, secondLevelGroupMembers, releaseFolders]) => {
         return forkJoin([
-          of(topLevelGroupResponse), of(topLevelGroupMembers), of(secondLevelGroupMembers), of(securityNamespaces),
-          this.azdoService.getReleaseFolders(this.project?.name!)
+          of(topLevelGroupResponse), of(topLevelGroupMembers), of(secondLevelGroupMembers), of(releaseFolders),
+          this.azdoService.getAccessControlLists(
+            this.azdoCacheService.releaseManagementSecurityNamespaceId, 
+            `${this.project.id}`
+            )
         ])
       })
     ).subscribe(values => {
       this.projectValidUsersGroup = values[0];
       this.projectValidUsersGroupMembers = values[1];
       this.projectValidUsersGroupMembersMembers = values[2];
-      this.securityNamespaces = values[3];
-      this.projectReleaseFolders = values[4];
+      this.projectReleaseFolders = values[3];
+      this.projectReleaseFolderAcls = values[4];
       this.checkProjectValidUsers();
       this.checkReleaseFolderSecurity();
       this.securityFindingsCount = this.findings.length;
@@ -123,37 +136,40 @@ export class ProjectSecurityComponent implements OnInit {
       )
 
       if (memberIdentity?.providerDisplayName?.toUpperCase() === `[${this.project.name}]\\Project Administrators`.toUpperCase())
-        this.checkProjectGroup(memberIdentity, `Project Collection Administrators`, "Project Administrators");
+        this.checkProjectGroup(memberIdentity, `[${collectionName}]\\Project Collection Administrators`, "Project Administrators");
 
       else if (memberIdentity?.providerDisplayName?.toUpperCase() === `[${this.project.name}]\\Auditors`.toUpperCase())
-        this.checkProjectGroup(memberIdentity, `Project Collection Auditors`, "Auditors");
+        this.checkProjectGroup(memberIdentity, `[${collectionName}]\\Project Collection Auditors`, "Auditors");
 
       else if (memberIdentity?.providerDisplayName?.toUpperCase() === `[${this.project.name}]\\Build Administrators`.toUpperCase())
-        this.checkProjectGroup(memberIdentity, `Project Collection Build Administrators`, "Build Administrators");
+        this.checkProjectGroup(memberIdentity, `[${collectionName}]\\Project Collection Build Administrators`, "Build Administrators");
 
       else if (memberIdentity?.providerDisplayName?.toUpperCase() === `[${this.project.name}]\\Developers`.toUpperCase())
-        this.checkProjectGroup(memberIdentity, `Project Collection Developers`, "Developers");
+        this.checkProjectGroup(memberIdentity, `[${collectionName}]\\Project Collection Developers`, "Developers");
 
       else if (memberIdentity?.providerDisplayName?.toUpperCase() === `[${this.project.name}]\\Operators`.toUpperCase())
-        this.checkProjectGroup(memberIdentity, `Project Collection Operators`, "Operators");
+        this.checkProjectGroup(memberIdentity, `[${collectionName}]\\Project Collection Operators`, "Operators");
 
       else if (memberIdentity?.providerDisplayName?.toUpperCase() === `[${this.project.name}]\\Compliance Officers`.toUpperCase())
-        this.checkProjectGroup(memberIdentity, `Project Collection Compliance Officers`, "Compliance Officers");
+        this.checkProjectGroup(memberIdentity, `[${collectionName}]\\Project Collection Compliance Officers`, "Compliance Officers");
 
       else if (memberIdentity?.providerDisplayName?.toUpperCase() === `[${this.project.name}]\\DevOps Engineers`.toUpperCase())
-        this.checkProjectGroup(memberIdentity, `Project Collection DevOps Engineers`, "DevOps Engineers");
+        this.checkProjectGroup(memberIdentity, `[${collectionName}]\\Project Collection DevOps Engineers`, "DevOps Engineers");
 
       else if (memberIdentity?.providerDisplayName?.toUpperCase() === `[${this.project.name}]\\Release Engineers`.toUpperCase())
-        this.checkProjectGroup(memberIdentity, `Project Collection Release Engineers`, "Release Engineers");
+        this.checkProjectGroup(memberIdentity, `[${collectionName}]\\Project Collection Release Engineers`, "Release Engineers");
 
       else if (memberIdentity?.providerDisplayName?.toUpperCase() === `[${this.project.name}]\\Testers`.toUpperCase())
-        this.checkProjectGroup(memberIdentity, `Project Collection Testers`, "Testers");
+        this.checkProjectGroup(memberIdentity, `[${collectionName}]\\Project Collection Testers`, "Testers");
 
       else if (memberIdentity?.providerDisplayName?.toUpperCase() === `[${this.project.name}]\\Readers`.toUpperCase())
-        this.checkProjectGroup(memberIdentity, `Project Collection Readers`, "Readers");
+        this.checkProjectGroup(memberIdentity, `[${collectionName}]\\Project Collection Readers`, "Readers");
 
       else if (memberIdentity?.providerDisplayName?.toUpperCase() === `[${this.project.name}]\\Contributors`.toUpperCase())
         this.checkProjectGroupIsEmpty(memberIdentity, "Contributors");
+
+        else if (memberIdentity?.providerDisplayName?.toUpperCase() === `[${this.project.name}]\\Release Administrators`.toUpperCase())
+          this.checkProjectGroupIsEmpty(memberIdentity, "Release Administrators");
 
       else if (memberIdentity?.providerDisplayName?.toUpperCase().includes("Team".toUpperCase())) {
         console.log(`Skipping ${memberIdentity.providerDisplayName}`)
@@ -218,29 +234,38 @@ export class ProjectSecurityComponent implements OnInit {
   }
 
   private checkReleaseFolderSecurity() {
-    const releaseManagementSecurityNamespace = this.azdoService.getSecurityNamespace(
-      "c788c23e-1b46-4162-8f5e-d7585343b5de",
-      this.securityNamespaces);
 
-    const releasePermissionBits = releaseManagementSecurityNamespace.actions;
+    const releasePermissionBits = this.azdoCacheService.getSecurityNamespace(
+      this.azdoCacheService.releaseManagementSecurityNamespaceId).actions;
     console.log(releasePermissionBits);
     console.log(this.projectReleaseFolders)
-    this.projectReleaseFolders.value?.forEach(folder => {
-      const aclResponse = this.azdoService.getAccessControlLists(
-        releaseManagementSecurityNamespace.namespaceId!,
-        `${this.project.id}${this.utilityService.swapSlashes(folder.path)}`
-      ).subscribe(acls => {
-        acls.value?.forEach(acl => {
-          this.checkProjectReleaseFolder(folder, acl);
-        });
-      })
+    console.log(this.projectReleaseFolderAcls)
 
-    });
+    // const rootFolder: Folder = this.projectReleaseFolders?.value![0]
+    // this.azdoService.getAccessControlLists(
+    //   releaseManagementSecurityNamespace.namespaceId!,
+    //   `${this.project.id}${this.utilityService.swapSlashes(rootFolder.path)}`
+    // ).subscribe(acls => {
+    //   acls.value?.forEach(acl => {
+    //     this.checkProjectReleaseFolders(acl);
+    //   });
+    // });
+    // this.projectReleaseFolders.value?.forEach(folder => {
+    //   const aclResponse = this.azdoService.getAccessControlLists(
+    //     releaseManagementSecurityNamespace.namespaceId!,
+    //     `${this.project.id}${this.utilityService.swapSlashes(folder.path)}`
+    //   ).subscribe(acls => {
+    //     acls.value?.forEach(acl => {
+    //       this.checkProjectReleaseFolder(folder, acl);
+    //     });
+    //   })
+
+    // });
 
   }
 
-  private checkProjectReleaseFolder(folder: Folder, acl: any): void {
-    console.log(folder);
-    console.log(acl);
+  private checkProjectReleaseFolders(acl: any[]): void {
+    // console.log(folder);
+    // console.log(acl);
   }
 }

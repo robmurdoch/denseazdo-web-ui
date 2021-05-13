@@ -10,37 +10,25 @@ import { CloseScrollStrategy } from '@angular/cdk/overlay';
 })
 export class AzDoCacheService {
   securityNamespaces: Collection<SecurityNamespace> = {};
+  releaseManagementSecurityNamespaceId: string = "c788c23e-1b46-4162-8f5e-d7585343b5de";
+
   everyoneGroup: Collection<Identity> = {};
   everyone: Collection<Identity> = {};
 
   constructor(
     private azdoService: AzDoService
   ) {
-    this.cacheData();
+    this.azdoService.getSecurityNamespaces()
+      .subscribe(results => {
+        this.securityNamespaces = results;
+      });
+    // this.cacheData();
   }
 
-  private async cacheData() {
-    // this.securityNamespaces = await this.azdoService.getSecurityNamespaces().toPromise();
-    // this.everyoneGroup = await this.azdoService.getProjectCollectionValidUsersGroup().toPromise();
-    // if (this.everyoneGroup && this.everyoneGroup.value?.length && this.everyoneGroup.value[0].memberIds) {
-    //   const memberIds = this.everyoneGroup?.value[0]?.memberIds
-    //   this.everyone = await this.azdoService.getIdenties(memberIds).toPromise()
-    // }
-    // console.log("Data cached")
+  getSecurityNamespace(namespaceId: string): SecurityNamespace {
+    const securityNamespace = this.securityNamespaces.value?.find(
+      securityNamespace => securityNamespace?.namespaceId === namespaceId
+    )
+    return securityNamespace!;
   }
-
-  // getSecurityNamespaces(): Collection<SecurityNamespace> {
-  //   console.log(this.securityNamespaces.count)
-  //   return this.securityNamespaces;
-  // }
-
-  // getProjectCollectionValidUsersGroup(): Collection<Identity> {
-  //   console.log(this.everyoneGroup.count)
-  //   return this.everyoneGroup;
-  // }
-
-  // getIdenties(): Collection<Identity> {
-  //   console.log(this.everyone.count)
-  //   return this.everyone;
-  // }
 }
