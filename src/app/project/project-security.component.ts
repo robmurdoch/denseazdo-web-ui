@@ -84,6 +84,8 @@ export class ProjectSecurityComponent implements OnInit {
         ])
       })
     ).subscribe(values => {
+      this.azdoCacheService.cacheIdentities(values[1])
+      this.azdoCacheService.cacheIdentities(values[2])
       this.projectValidUsersGroup = values[0];
       this.projectValidUsersGroupMembers = values[1];
       this.projectValidUsersGroupMembersMembers = values[2];
@@ -240,6 +242,13 @@ export class ProjectSecurityComponent implements OnInit {
     console.log(releasePermissionBits);
     console.log(this.projectReleaseFolders)
     console.log(this.projectReleaseFolderAcls)
+    this.projectReleaseFolderAcls.value.forEach((acl:any) => {
+      for(var key in acl.acesDictionary){
+        var value = acl.acesDictionary[key];
+        const identity = this.azdoCacheService.getIdentity(key)
+        console.log(identity);
+      }
+    });
 
     // const rootFolder: Folder = this.projectReleaseFolders?.value![0]
     // this.azdoService.getAccessControlLists(

@@ -23,7 +23,7 @@ export class AzDoService {
 
   tryConnection(connectionInfo: ConnectionInfo): Observable<Collection<ProjectInfo>> {
     if (connectionInfo) {
-      let url = `${connectionInfo.url}/_apis/projects?api-version=${this.azDoConnectionService.mostRecentApiVersion}`
+      const url = `${connectionInfo.url}/_apis/projects?api-version=${this.azDoConnectionService.mostRecentApiVersion}`
       return this.http.get<Collection<ProjectInfo>>(url, this.getHttpHeaders(connectionInfo));
     }
     else {
@@ -38,9 +38,9 @@ export class AzDoService {
    *  the level of access the entities have to perform a specific action on specific resources.
   */
   getSecurityNamespaces(): Observable<Collection<SecurityNamespace>> {
-    var connection = this.azDoConnectionService.currentConnection;
+    const connection = this.azDoConnectionService.currentConnection;
     if (connection) {
-      let url = `${connection.url}/_apis/securitynamespaces?api-version=${connection.apiVersion}`
+      const url = `${connection.url}/_apis/securitynamespaces?api-version=${connection.apiVersion}`
       console.log(url);
       return this.http.get<Collection<SecurityNamespace>>(url, this.getHttpHeaders(connection))
         .pipe(
@@ -59,9 +59,9 @@ export class AzDoService {
    * @returns 
    */
   getReleaseFolders(projectName: string): Observable<Collection<Folder>> {
-    var connection = this.azDoConnectionService.currentConnection;
+    const connection = this.azDoConnectionService.currentConnection;
     if (connection) {
-      let url = `${connection.url}/${projectName}/_apis/release/folders?api-version=${connection.apiVersion}-preview.1`
+      const url = `${connection.url}/${projectName}/_apis/release/folders?api-version=${connection.apiVersion}-preview.1`
       console.log(url);
       return this.http.get<Collection<Folder>>(url, this.getHttpHeaders(connection))
         .pipe(
@@ -93,9 +93,9 @@ export class AzDoService {
    *  the level of access the entities have to perform a specific action on specific resources.
   */
   getAccessControlLists(namespace: string, token: string): Observable<Collection<any>> {
-    var connection = this.azDoConnectionService.currentConnection;
+    const connection = this.azDoConnectionService.currentConnection;
     if (connection) {
-      let url = `${connection.url}/_apis/accesscontrollists/${namespace}?token=${token}&includeextendedinfo=true&recurse=true&api-version=${connection.apiVersion}`
+      const url = `${connection.url}/_apis/accesscontrollists/${namespace}?token=${token}&includeextendedinfo=true&recurse=true&api-version=${connection.apiVersion}`
       console.log(url);
       return this.http.get<Collection<any>>(url, this.getHttpHeaders(connection))
         .pipe(
@@ -109,8 +109,8 @@ export class AzDoService {
 
 
   getProjectValidUsersGroup(projectName: string): Observable<Collection<Identity>> {
-    var connection = this.azDoConnectionService.currentConnection;
-    let url = `${connection.url}/_apis/identities?searchFilter=General&filterValue=[${projectName}]\\Project%20Valid%20Users&queryMembership=direct&api-version=${connection.apiVersion}`
+    const connection = this.azDoConnectionService.currentConnection;
+    const url = `${connection.url}/_apis/identities?searchFilter=General&filterValue=[${projectName}]\\Project%20Valid%20Users&queryMembership=direct&api-version=${connection.apiVersion}`
     console.log(url);
     return this.http.get<Collection<Identity>>(url, this.getHttpHeaders(connection))
       .pipe(
@@ -120,8 +120,8 @@ export class AzDoService {
 
   // TODO: get the Special EveryoneApplicationGroup instead
   getProjectCollectionValidUsersGroup(): Observable<Collection<Identity>> {
-    var connection = this.azDoConnectionService.currentConnection;
-    let url = `${connection.url}/_apis/identities?searchFilter=General&filterValue=Project%20Collection%20Valid%20Users&queryMembership=direct&api-version=${connection.apiVersion}`
+    const connection = this.azDoConnectionService.currentConnection;
+    const url = `${connection.url}/_apis/identities?searchFilter=General&filterValue=Project%20Collection%20Valid%20Users&queryMembership=direct&api-version=${connection.apiVersion}`
     console.log(url);
     return this.http.get<Collection<Identity>>(url, this.getHttpHeaders(connection))
       .pipe(
@@ -131,9 +131,9 @@ export class AzDoService {
 
   // Get the everyonegroup's membership identities
   getIdentities(memberIds: string[]): Observable<Collection<Identity>> {
-    var connection = this.azDoConnectionService.currentConnection;
-    // let url = `${connection.url}/_apis/identities?descriptors=${descriptors.join()}&queryMembership=direct&api-version=${connection.apiVersion}`
-    let url = `${connection.url}/_apis/identities?identityIds=${memberIds.join()}&queryMembership=direct&api-version=${connection.apiVersion}`
+    const connection = this.azDoConnectionService.currentConnection;
+    // const url = `${connection.url}/_apis/identities?descriptors=${descriptors.join()}&queryMembership=direct&api-version=${connection.apiVersion}`
+    const url = `${connection.url}/_apis/identities?identityIds=${memberIds.join()}&queryMembership=direct&api-version=${connection.apiVersion}`
     console.log(url);
     return this.http.get<Collection<Identity>>(url, this.getHttpHeaders(connection))
       .pipe(
@@ -143,9 +143,9 @@ export class AzDoService {
 
   /** GET Projects from the server */
   getProjects(): Observable<Collection<ProjectInfo>> {
-    var connection = this.azDoConnectionService.currentConnection;
+    const connection = this.azDoConnectionService.currentConnection;
     if (connection) {
-      let url = `${connection.url}/_apis/projects?api-version=${connection.apiVersion}`
+      const url = `${connection.url}/_apis/projects?api-version=${connection.apiVersion}`
       console.log(url);
       return this.http.get<Collection<ProjectInfo>>(url, this.getHttpHeaders(connection))
         .pipe(

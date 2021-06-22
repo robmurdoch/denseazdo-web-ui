@@ -320,7 +320,7 @@ export interface IdentityProperty {
 
 export interface Identity {
     id?: string;
-    descriptor?: string;
+    descriptor: string;
     subjectDescriptor?: string;
     providerDisplayName?: string;
     customDisplayName?: string;

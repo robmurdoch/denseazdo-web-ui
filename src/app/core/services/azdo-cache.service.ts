@@ -4,6 +4,7 @@ import { AzDoService } from './azdo.service';
 import { Collection, SecurityNamespace, Identity, ProjectInfo } from '../shared/azdo-types';
 import { shareReplay } from 'rxjs/operators';
 import { CloseScrollStrategy } from '@angular/cdk/overlay';
+import { element } from 'protractor';
 
 @Injectable({
   providedIn: 'root'
@@ -11,9 +12,10 @@ import { CloseScrollStrategy } from '@angular/cdk/overlay';
 export class AzDoCacheService {
   securityNamespaces: Collection<SecurityNamespace> = {};
   releaseManagementSecurityNamespaceId: string = "c788c23e-1b46-4162-8f5e-d7585343b5de";
+  identities: Identity[] = [];
 
-  everyoneGroup: Collection<Identity> = {};
-  everyone: Collection<Identity> = {};
+  // everyoneGroup: Collection<Identity> = {};
+  // everyone: Collection<Identity> = {};
 
   constructor(
     private azdoService: AzDoService
@@ -31,4 +33,16 @@ export class AzDoCacheService {
     )
     return securityNamespace!;
   }
+
+  cacheIdentities(identityCollection: Collection<Identity>): void {
+    this.identities = this.identities.concat(identityCollection.value!);
+  }
+
+  getIdentity(descriptor: String): Identity{
+    const identity = this.identities.find(
+      identity => identity?.descriptor === descriptor
+      );
+    return identity!;
+  }
+
 }
