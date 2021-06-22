@@ -11,6 +11,7 @@ import { SnackbarService } from '../core/services/snackbar.service';
 import { FindingDialogComponent } from '../finding-dialog/finding-dialog.component';
 import { RuleService } from '../core/services/rule.service';
 import { UtilityService } from '../core/services/utility.service';
+import { AzDoCacheService } from '../core/services/azdo-cache.service';
 
 @Component({
   selector: 'app-collection-security',
@@ -30,6 +31,7 @@ export class CollectionSecurityComponent {
   constructor(
     private azdoConnectionService: AzDoConnectionService,
     private azdoService: AzDoService,
+    private azdoCacheService: AzDoCacheService,
     private snackBarService: SnackbarService,
     private ruleService: RuleService,
     public dialog: MatDialog,
@@ -48,15 +50,15 @@ export class CollectionSecurityComponent {
           this.azdoService.getIdentities(topLevelGroup.memberIds)
         ]);
       }),
-      concatMap(([response1, response2]) => {
-        // const secondLevelGroupMembers: string[] = 
+      concatMap(([topLevelGroupResponse, topLevelGroupMembers]) => {
         return forkJoin([
-          of(response1),
-          of(response2),
-          this.azdoService.getIdentities(this.combineMemberIds(response2?.value!))
+          of(topLevelGroupResponse), of(topLevelGroupMembers),
+          this.azdoService.getIdentities(this.combineMemberIds(topLevelGroupMembers?.value!))
         ]);
       }),
     ).subscribe(values => {
+      this.azdoCacheService.cacheIdentities(values[1])
+      this.azdoCacheService.cacheIdentities(values[2])
       this.projectCollectionValidUsersGroup = values[0];
       this.projectCollectionValidUsersGroupMembers = values[1];
       this.projectCollectionValidUsersGroupMembersMembers = values[2];

@@ -320,7 +320,7 @@ export interface IdentityProperty {
 
 export interface Identity {
     id?: string;
-    descriptor?: string;
+    descriptor: string;
     subjectDescriptor?: string;
     providerDisplayName?: string;
     customDisplayName?: string;
@@ -332,4 +332,22 @@ export interface Identity {
     properties?: IdentityPropertyData;
     resourceVersion?: number;
     metaTypeId?: number;
+}
+
+export interface IdentityRef {
+    descriptor?: string;
+    displayName?: string;
+    id?: string;
+    imageUrl: string;
+    uniqueName?: string;
+    url?: string;
+}
+
+export interface Folder{
+    createdBy?:IdentityRef;
+    createdOn:string;
+    description?:string;
+    lastChangedBy?:IdentityRef;
+    lastChangedDate:string;
+    path:string;
 }

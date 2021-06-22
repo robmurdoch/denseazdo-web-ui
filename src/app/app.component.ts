@@ -51,6 +51,7 @@ export class AppComponent implements OnInit {
       this.openConnectionDialog({ url: "", token: "" });
     } else {
       this.azDoConnectionService.setConnection(connection);
+      this.ngOnInit();
     }
   }
 

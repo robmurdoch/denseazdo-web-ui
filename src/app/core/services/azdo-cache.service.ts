@@ -4,43 +4,45 @@ import { AzDoService } from './azdo.service';
 import { Collection, SecurityNamespace, Identity, ProjectInfo } from '../shared/azdo-types';
 import { shareReplay } from 'rxjs/operators';
 import { CloseScrollStrategy } from '@angular/cdk/overlay';
+import { element } from 'protractor';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AzDoCacheService {
   securityNamespaces: Collection<SecurityNamespace> = {};
-  everyoneGroup: Collection<Identity> = {};
-  everyone: Collection<Identity> = {};
+  releaseManagementSecurityNamespaceId: string = "c788c23e-1b46-4162-8f5e-d7585343b5de";
+  identities: Identity[] = [];
+
+  // everyoneGroup: Collection<Identity> = {};
+  // everyone: Collection<Identity> = {};
 
   constructor(
     private azdoService: AzDoService
   ) {
-    this.cacheData();
+    this.azdoService.getSecurityNamespaces()
+      .subscribe(results => {
+        this.securityNamespaces = results;
+      });
+    // this.cacheData();
   }
 
-  private async cacheData() {
-    // this.securityNamespaces = await this.azdoService.getSecurityNamespaces().toPromise();
-    // this.everyoneGroup = await this.azdoService.getProjectCollectionValidUsersGroup().toPromise();
-    // if (this.everyoneGroup && this.everyoneGroup.value?.length && this.everyoneGroup.value[0].memberIds) {
-    //   const memberIds = this.everyoneGroup?.value[0]?.memberIds
-    //   this.everyone = await this.azdoService.getIdenties(memberIds).toPromise()
-    // }
-    // console.log("Data cached")
+  getSecurityNamespace(namespaceId: string): SecurityNamespace {
+    const securityNamespace = this.securityNamespaces.value?.find(
+      securityNamespace => securityNamespace?.namespaceId === namespaceId
+    )
+    return securityNamespace!;
   }
 
-  // getSecurityNamespaces(): Collection<SecurityNamespace> {
-  //   console.log(this.securityNamespaces.count)
-  //   return this.securityNamespaces;
-  // }
+  cacheIdentities(identityCollection: Collection<Identity>): void {
+    this.identities = this.identities.concat(identityCollection.value!);
+  }
 
-  // getProjectCollectionValidUsersGroup(): Collection<Identity> {
-  //   console.log(this.everyoneGroup.count)
-  //   return this.everyoneGroup;
-  // }
+  getIdentity(descriptor: String): Identity{
+    const identity = this.identities.find(
+      identity => identity?.descriptor === descriptor
+      );
+    return identity!;
+  }
 
-  // getIdenties(): Collection<Identity> {
-  //   console.log(this.everyone.count)
-  //   return this.everyone;
-  // }
 }
