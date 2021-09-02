@@ -384,15 +384,16 @@ function New-SecurityGroup {
         $Group
     )
     try {
-        if (Get-LocalGroup -Name $GroupName -ErrorAction Stop) {
-            Write-Verbose "$GroupName already exists"
-            # Remove-LocalGroup -Name $groupName
-        }
+        # if (Get-LocalGroup -Name $GroupName -ErrorAction Stop) {
+        #     Write-Verbose "$GroupName already exists"
+        #     # Remove-LocalGroup -Name $groupName
+        # }
     }
     catch [Microsoft.PowerShell.Commands.GroupNotFoundException] {
         Write-Verbose "$GroupName did not exist"
         if ($PSCmdlet.ShouldProcess($GroupName)) {
-            New-LocalGroup -Name $GroupName -Description $Group.Description -WhatIf:$WhatIfPreference
+            # New-LocalGroup -Name $GroupName -Description $Group.Description -WhatIf:$WhatIfPreference
+            
         }
         #"$($PSItem.Exception)"
     }

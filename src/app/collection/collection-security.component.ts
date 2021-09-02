@@ -100,6 +100,7 @@ export class CollectionSecurityComponent {
 
   private checkProjectCollectionValidUsers() {
     const collectionName = this.azdoConnectionService.getCollectionName(this.azdoConnectionService.currentConnection.url);
+    console.log(` collectionname: ${collectionName}`);
     const instanceName = this.azdoConnectionService.currentConnection?.instanceName;
 
     this.projectCollectionValidUsersGroupMembers?.value!.forEach(member => {

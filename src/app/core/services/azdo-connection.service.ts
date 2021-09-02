@@ -30,7 +30,14 @@ export class AzDoConnectionService {
   }
 
   getCollectionName(connection:string):string{
-    return connection.substring(connection.lastIndexOf("/") + 1);
+    var connectionUrl = ""
+    if (connection.substring(connection.length-1) ==="/"){
+      connectionUrl = connection.slice(0,-1)
+    }
+    else{
+      connectionUrl = connection
+    }
+    return connectionUrl.substring(connectionUrl.lastIndexOf("/") + 1);
     //handle case where url is Azure DevOps Services vs. On-Premise Server 
   }
 
