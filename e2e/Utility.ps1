@@ -1,4 +1,5 @@
 $script:ResultsCache = @{}
+$script:AzDoCred = @{ Connected = $false }
 
 function New-FileNameWithDate {
     param(
@@ -10,6 +11,80 @@ function New-FileNameWithDate {
     return "$file $(Get-Date -f yyyy-MM-dd)$extension"
 }
 
+function Connect-AzureDevOps {
+    [CmdletBinding(DefaultParameterSetName = 'Token')]
+    param(
+        [Parameter(Mandatory = $true,
+            HelpMessage = 'Enter the collection address, e.g. https://mysite.mydomain.net/DefaultCollection',
+            Position = 0)]
+        [String]$Uri,
+
+        [Parameter(Mandatory = $false,
+            HelpMessage = 'Select your authentication method Token, DefaultCredentials, Credentials',
+            position = 1)]
+        [ValidateSet('Token', 'DefaultCredentials', 'Credentials', IgnoreCase = $true)]
+        [String]$Method = 'DefaultCredentials',
+
+        [Parameter(Mandatory = $false,
+            ParameterSetName = 'Token',
+            HelpMessage = 'Enter your token',
+            position = 2)]
+        [string]$Token,
+
+        [Parameter(Mandatory = $false,
+            ParameterSetName = 'Credentials',
+            HelpMessage = 'Variable resulting from Get-Credential cmdlet',
+            position = 2)]        
+        [System.Management.Automation.PSCredential]$Creds
+    )
+    
+    if ($Method -eq 'Token') {
+        if (!$PSBoundParameters.ContainsKey("Token")) {
+            $Token = Read-Host "Need token"
+        }
+        $script:AzDoCred.Token = $Token
+    }
+    elseif ($Method -eq 'Credentials') {
+        if (!$PSBoundParameters.ContainsKey("Creds")) {
+            $Creds = $host.ui.PromptForCredential("Need credentials", "Please enter your user name and password.", "", "NetBiosUserName")
+        }
+        $script:AzDoCred.Credentials = $Creds
+    }
+
+    if ( $null -ne $script:AzDoCred.Token ) {
+        $response = Invoke-RestMethod `
+            -Method Get `
+            -Headers (Get-EncodedAuthHeader -headerValue $AzDoCred.Token) `
+            -Uri $Uri `
+            -ErrorAction:Stop
+        $script:AzDoCred.Connected = $true
+    }
+    elseif ($null -ne $script:AzDoCred.Credential) {
+        $response = Invoke-RestMethod `
+            -Method Get `
+            -Uri $Uri `
+            -Authentication Basic `
+            -Credential $AzDoCred.Credential
+        $script:AzDoCred.Connected = $true
+    }
+    else {
+        $response = Invoke-RestMethod `
+            -Method Get `
+            -Uri $Uri `
+            -UseDefaultCredentials
+        $script:AzDoCred.Connected = $true
+    }
+}
+
+function Get-EncodedAuthHeader {
+    param(
+        [String]$headerValue
+    )
+    $encodedValue = [System.Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes(":$($headerValue)"))
+    $header = @{authorization = "Basic $encodedValue" }
+    return $header
+}
+
 function Get-RestApiResults {
     param(
         [String]$Uri,
@@ -17,7 +92,11 @@ function Get-RestApiResults {
         [bool]$CacheResults = $false
     )
 
-    if ($CacheResults) {
+    if ($script:AzDoCred.Connected -eq $false) {
+        Connect-AzureDevOps -Uri $Uri
+    }
+
+    if ($CacheResults -and ($DebugPreference -ne 'SilentlyContinue')) {
         $UrlHash = Get-HashedUrl -Uri $Uri
         
         If ($script:ResultsCache.ContainsKey($UrlHash)) {
@@ -68,7 +147,7 @@ function New-CachedJsonDocument {
     $writer.Flush()
     $stringAsStream.Position = 0
     $hash = Get-FileHash -InputStream $stringAsStream
-    $json | Set-Content -Path "$Env:DOWNLOADS\$Name-$($hash.Hash).json" -Force
+    $json | Set-Content -Path "$Env:USERPROFILE\Downloads\$Name-$($hash.Hash).json" -Force
 }
 
 function Get-SecurityNamespaces {
