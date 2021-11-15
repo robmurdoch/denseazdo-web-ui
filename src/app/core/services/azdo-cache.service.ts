@@ -11,7 +11,7 @@ import { element } from 'protractor';
 })
 export class AzDoCacheService {
   securityNamespaces: Collection<SecurityNamespace> = {};
-  releaseManagementSecurityNamespaceId: string = "c788c23e-1b46-4162-8f5e-d7585343b5de";
+  releaseManagementSecurityNamespaceId = 'c788c23e-1b46-4162-8f5e-d7585343b5de';
   identities: Identity[] = [];
 
   // everyoneGroup: Collection<Identity> = {};
@@ -28,21 +28,21 @@ export class AzDoCacheService {
   }
 
   getSecurityNamespace(namespaceId: string): SecurityNamespace {
-    const securityNamespace = this.securityNamespaces.value?.find(
+    const returnNamespace = this.securityNamespaces.value?.find(
       securityNamespace => securityNamespace?.namespaceId === namespaceId
-    )
-    return securityNamespace!;
+    );
+    return returnNamespace!;
   }
 
   cacheIdentities(identityCollection: Collection<Identity>): void {
     this.identities = this.identities.concat(identityCollection.value!);
   }
 
-  getIdentity(descriptor: String): Identity{
-    const identity = this.identities.find(
+  getIdentity(descriptor: string): Identity{
+    const returnIdentity = this.identities.find(
       identity => identity?.descriptor === descriptor
       );
-    return identity!;
+    return returnIdentity!;
   }
 
 }

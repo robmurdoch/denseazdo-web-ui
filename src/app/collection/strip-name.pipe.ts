@@ -8,7 +8,7 @@ export class StripNamePipe implements PipeTransform {
 
   constructor(
     private azDoConnectionService: AzDoConnectionService,
-  ) {    
+  ) {
   }
 
   transform(value: string, ...args: string[]): string {

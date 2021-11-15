@@ -15,7 +15,7 @@ export class CollectionComponent implements OnInit {
 
   constructor(
     private azdoService: AzDoService,
-    private AzDoCacheService: AzDoCacheService) {
+    private azDoCacheService: AzDoCacheService) {
     this.projects = {};
     this.projectValidUsersGroup = {};
   }
@@ -24,6 +24,6 @@ export class CollectionComponent implements OnInit {
     this.azdoService.getProjects()
       .subscribe(results => {
         this.projects = results;
-      })
+      });
   }
 }

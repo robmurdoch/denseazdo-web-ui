@@ -32,15 +32,15 @@ export interface Finding {
     /**
      * Rule analyzed
      */
-    rule:Rule;
+    rule: Rule;
     /**
      * Value that was not expected by the rule
      */
-    value?:string;
+    value?: string;
     /**
      * Identifier that was not expected by the rule
      */
-    id?:string;
+    id?: string;
 }
 
 /**
@@ -51,13 +51,13 @@ export interface Rule {
     /**
      * Name of the rule
      */
-    name:string;
+    name: string;
     /**
      * Detail
      */
-    detail:string;
+    detail: string;
     /**
      * Description
      */
-    description:string;
+    description: string;
 }

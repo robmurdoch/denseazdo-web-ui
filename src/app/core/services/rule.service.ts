@@ -10,32 +10,32 @@ export class RuleService {
 
   getFinding(rule: Rule, value: string, id: string): Finding {
     return {
-      rule: rule,
-      value: value,
-      id: id
-    }
+      rule,
+      value,
+      id
+    };
   }
 
   getUnexpectedCollectionGroupMemberRule(detail: string): Rule {
     return {
-      name: "Unexpected collection-level group member",
-      detail: detail,
-      description: "Security groups defined at the collection level should be well-known and contain windows or active directory groups."
-    }
+      name: 'Unexpected collection-level group member',
+      detail,
+      description: 'Security groups defined at the collection level should be well-known and contain windows or active directory groups.'
+    };
   }
 
   getUnexpectedProjectGroupMemberRule(detail: string): Rule {
     return {
-      name: "Unexpected project-level group member",
-      detail: detail,
-      description: "Security groups defined at the project level should be well-known and contain only collection level groups."
-    }
+      name: 'Unexpected project-level group member',
+      detail,
+      description: 'Security groups defined at the project level should be well-known and contain only collection level groups.'
+    };
   }
 
-  getCsvArray(findings: Finding[]):string{
-    let csv: string[] = [];
+  getCsvArray(findings: Finding[]): string{
+    const csv: string[] = [];
     csv.push('"Rule","Rule Description","Group","Member Id","Member Name"');
-    findings.forEach(finding =>{
+    findings.forEach(finding => {
       csv.push(`"${finding.rule.name}","${finding.rule.description}","${finding.rule.detail}","${finding.id}","${finding.value}"`);
     });
     const csvArray = csv.join('\r\n');

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Collection, SecurityNamespace } from '../shared/azdo-types'
+import { Collection, SecurityNamespace } from '../shared/azdo-types';
 
 @Injectable({
   providedIn: 'root'
@@ -20,6 +20,6 @@ export class UtilityService {
   }
 
   swapSlashes(source: string): string{
-    return source.replace(/\\/g,'/');
+    return source.replace(/\\/g, '/');
   }
 }

@@ -6,6 +6,7 @@ import { catchError, tap } from 'rxjs/operators';
 import { Collection, ProjectInfo, SecurityNamespace, Identity, Folder } from '../shared/azdo-types';
 import { ConnectionInfo } from '../shared/interfaces';
 import { AzDoConnectionService } from './azdo-connection.service';
+import { ObserversModule } from '@angular/cdk/observers';
 
 @Injectable({
   providedIn: 'root'
@@ -21,9 +22,9 @@ export class AzDoService {
   ) {
   }
 
-  tryConnection(connectionInfo: ConnectionInfo): Observable<Collection<ProjectInfo>> {
+  tryConnection(connectionInfo: ConnectionInfo): any {
     if (connectionInfo) {
-      const url = `${connectionInfo.url}/_apis/projects?api-version=${this.azDoConnectionService.mostRecentApiVersion}`
+      const url = `${connectionInfo.url}/_apis/projects?api-version=${this.azDoConnectionService.mostRecentApiVersion}`;
       return this.http.get<Collection<ProjectInfo>>(url, this.getHttpHeaders(connectionInfo));
     }
     else {
@@ -31,16 +32,16 @@ export class AzDoService {
     }
   }
 
-  /** 
-   * GET Security Namespaces 
+  /**
+   * GET Security Namespaces
    * From the docs: https://docs.microsoft.com/en-us/azure/devops/organizations/security/namespace-reference
    * Security namespaces are used to store access control lists (ACLs) on tokens. Data stored in security namespaces determines
    *  the level of access the entities have to perform a specific action on specific resources.
-  */
+   */
   getSecurityNamespaces(): Observable<Collection<SecurityNamespace>> {
     const connection = this.azDoConnectionService.currentConnection;
     if (connection) {
-      const url = `${connection.url}/_apis/securitynamespaces?api-version=${connection.apiVersion}`
+      const url = `${connection.url}/_apis/securitynamespaces?api-version=${connection.apiVersion}`;
       console.log(url);
       return this.http.get<Collection<SecurityNamespace>>(url, this.getHttpHeaders(connection))
         .pipe(
@@ -56,12 +57,11 @@ export class AzDoService {
    * Get the folder heirarchy
    * https://docs.microsoft.com/en-us/rest/api/azure/devops/release/folders/list?view=azure-devops-rest-6.0
    * GET https://vsrm.dev.azure.com/{organization}/{project}/_apis/release/folders/{path}?api-version=6.0-preview.2
-   * @returns 
    */
   getReleaseFolders(projectName: string): Observable<Collection<Folder>> {
     const connection = this.azDoConnectionService.currentConnection;
     if (connection) {
-      const url = `${connection.url}/${projectName}/_apis/release/folders?api-version=${connection.apiVersion}-preview.1`
+      const url = `${connection.url}/${projectName}/_apis/release/folders?api-version=${connection.apiVersion}-preview.1`;
       console.log(url);
       return this.http.get<Collection<Folder>>(url, this.getHttpHeaders(connection))
         .pipe(
@@ -75,7 +75,7 @@ export class AzDoService {
 
   // Security
   // Need the security namespace guid
-  // Retrieve the Security Namespace 
+  // Retrieve the Security Namespace
   // Extract the PermssionBits namespaceResponse.value.actions
   // If reporting a heirarchy of permissions c788c23e-1b46-4162-8f5e-d7585343b5de
   // * Retrieve the root node and report the root node
@@ -86,16 +86,16 @@ export class AzDoService {
   // * * Iterate the items in the acesDictionary
   // * * Iterate the permission bits NotSet is the default
 
-  /** 
+  /**
    * GET Access Control Lists
    * From the docs: https://docs.microsoft.com/en-us/azure/devops/organizations/security/namespace-reference
    * Security namespaces are used to store access control lists (ACLs) on tokens. Data stored in security namespaces determines
    *  the level of access the entities have to perform a specific action on specific resources.
-  */
+   */
   getAccessControlLists(namespace: string, token: string): Observable<Collection<any>> {
     const connection = this.azDoConnectionService.currentConnection;
     if (connection) {
-      const url = `${connection.url}/_apis/accesscontrollists/${namespace}?token=${token}&includeextendedinfo=true&recurse=true&api-version=${connection.apiVersion}`
+      const url = `${connection.url}/_apis/accesscontrollists/${namespace}?token=${token}&includeextendedinfo=true&recurse=true&api-version=${connection.apiVersion}`;
       console.log(url);
       return this.http.get<Collection<any>>(url, this.getHttpHeaders(connection))
         .pipe(
@@ -110,7 +110,7 @@ export class AzDoService {
 
   getProjectValidUsersGroup(projectName: string): Observable<Collection<Identity>> {
     const connection = this.azDoConnectionService.currentConnection;
-    const url = `${connection.url}/_apis/identities?searchFilter=General&filterValue=[${projectName}]\\Project%20Valid%20Users&queryMembership=direct&api-version=${connection.apiVersion}`
+    const url = `${connection.url}/_apis/identities?searchFilter=General&filterValue=[${projectName}]\\Project%20Valid%20Users&queryMembership=direct&api-version=${connection.apiVersion}`;
     console.log(url);
     return this.http.get<Collection<Identity>>(url, this.getHttpHeaders(connection))
       .pipe(
@@ -121,7 +121,7 @@ export class AzDoService {
   // TODO: get the Special EveryoneApplicationGroup instead
   getProjectCollectionValidUsersGroup(): Observable<Collection<Identity>> {
     const connection = this.azDoConnectionService.currentConnection;
-    const url = `${connection.url}/_apis/identities?searchFilter=General&filterValue=Project%20Collection%20Valid%20Users&queryMembership=direct&api-version=${connection.apiVersion}`
+    const url = `${connection.url}/_apis/identities?searchFilter=General&filterValue=Project%20Collection%20Valid%20Users&queryMembership=direct&api-version=${connection.apiVersion}`;
     console.log(url);
     return this.http.get<Collection<Identity>>(url, this.getHttpHeaders(connection))
       .pipe(
@@ -133,7 +133,7 @@ export class AzDoService {
   getIdentities(memberIds: string[]): Observable<Collection<Identity>> {
     const connection = this.azDoConnectionService.currentConnection;
     // const url = `${connection.url}/_apis/identities?descriptors=${descriptors.join()}&queryMembership=direct&api-version=${connection.apiVersion}`
-    const url = `${connection.url}/_apis/identities?identityIds=${memberIds.join()}&queryMembership=direct&api-version=${connection.apiVersion}`
+    const url = `${connection.url}/_apis/identities?identityIds=${memberIds.join()}&queryMembership=direct&api-version=${connection.apiVersion}`;
     console.log(url);
     return this.http.get<Collection<Identity>>(url, this.getHttpHeaders(connection))
       .pipe(
@@ -145,7 +145,7 @@ export class AzDoService {
   getProjects(): Observable<Collection<ProjectInfo>> {
     const connection = this.azDoConnectionService.currentConnection;
     if (connection) {
-      const url = `${connection.url}/_apis/projects?api-version=${connection.apiVersion}`
+      const url = `${connection.url}/_apis/projects?api-version=${connection.apiVersion}`;
       console.log(url);
       return this.http.get<Collection<ProjectInfo>>(url, this.getHttpHeaders(connection))
         .pipe(
@@ -163,7 +163,7 @@ export class AzDoService {
    * @param operation - name of the operation that failed
    * @param result - optional value to return as the observable result
    */
-  private handleError<T>(operation = 'operation', result?: T) {
+  private handleError<T>(operation = 'operation', result?: T): any {
     return (error: any): Observable<T> => {
 
       // TODO: send the error to remote logging infrastructure
@@ -177,16 +177,16 @@ export class AzDoService {
     };
   }
 
-  log(message: string) {
+  log(message: string): void {
     // TODO: emit in UI somewhere
     console.log(message);
   }
 
-  private getHttpHeaders(connectionInfo: ConnectionInfo) {
+  private getHttpHeaders(connectionInfo: ConnectionInfo): any {
     return {
       headers: new HttpHeaders({
         observe: 'response',
-        Authorization: 'Basic ' + btoa("" + ":" + connectionInfo.token + "")
+        Authorization: 'Basic ' + btoa('' + ':' + connectionInfo.token + '')
       })
     };
   }

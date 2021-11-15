@@ -17,11 +17,9 @@ import { RuleService } from '../core/services/rule.service';
   styleUrls: ['./project.component.css']
 })
 export class ProjectComponent implements OnInit {
-  // @Input() item: string;
-  
-  showProjectSecuritySpinner: boolean = false;
-  showSecurityFindingsBadge: boolean = false;
-  securityFindingsCount: number = 0;
+  showProjectSecuritySpinner = false;
+  showSecurityFindingsBadge = false;
+  securityFindingsCount = 0;
   securityNamespaces: Collection<SecurityNamespace> = {};
   projectCollectionValidUsersGroup: Collection<Identity> = {};
   projectCollectionValidUsersGroupMembers: Collection<Identity> = {};
@@ -48,7 +46,6 @@ export class ProjectComponent implements OnInit {
         ]);
       }),
       concatMap(([response1, response2]) => {
-        // const secondLevelGroupMembers: string[] = 
         return forkJoin([
           of(response1),
           of(response2),
@@ -62,93 +59,93 @@ export class ProjectComponent implements OnInit {
       this.checkProjectCollectionValidUsers();
       this.securityFindingsCount = this.findings.length;
       this.showProjectSecuritySpinner
-   = false;
+        = false;
     });
   }
 
-  openFindingsDialog(chip: any) {
+  openFindingsDialog(chip: any): void {
     if (this.findings.length) {
       const dialogRef = this.dialog.open(FindingDialogComponent, {
         width: '500px',
         data: { findings: this.findings }
-      })
+      });
     } else {
       // Show some eyecandy telling them how great their security is and what was checked
     }
   }
 
   combineMemberIds(identities: Identity[]): string[] {
-    var memberIds: string[] = [];
+    let memberIds: string[] = [];
     identities.forEach(identity => {
-      memberIds = memberIds.concat(identity.memberIds!)
+      memberIds = memberIds.concat(identity.memberIds!);
     });
     return memberIds;
   }
 
-  private checkProjectCollectionValidUsers() {
+  private checkProjectCollectionValidUsers(): void {
     const collectionName = this.azdoConnectionService.getCollectionName(this.azdoConnectionService.currentConnection.url);
     const instanceName = this.azdoConnectionService.currentConnection?.instanceName;
 
     this.projectCollectionValidUsersGroupMembers?.value!.forEach(member => {
       const memberIdentity = this.projectCollectionValidUsersGroupMembers?.value?.find(
         identity => identity?.descriptor === member.descriptor
-      )
+      );
 
-      if (memberIdentity?.providerDisplayName?.toUpperCase() === `[${collectionName}]\\Project Collection Administrators`.toUpperCase())
+      if (memberIdentity?.providerDisplayName?.toUpperCase() === `[${collectionName}]\\Project Collection Administrators`.toUpperCase()) {
         this.checkProjectCollectionAdministrators(memberIdentity);
-
-      else if (memberIdentity?.providerDisplayName?.toUpperCase() === `[${collectionName}]\\Project Collection Auditors`.toUpperCase())
-        this.checkProjectCollectionGroup(memberIdentity, `${instanceName}Auditors`, "Project Collection Auditors");
-
-      else if (memberIdentity?.providerDisplayName?.toUpperCase() === `[${collectionName}]\\Project Collection Build Administrators`.toUpperCase())
-        this.checkProjectCollectionGroup(memberIdentity, `${instanceName}BuildAdministrators`, "Project Collection Build Administrators");
-
-      else if (memberIdentity?.providerDisplayName?.toUpperCase() === `[${collectionName}]\\Project Collection Build Service Accounts`.toUpperCase())
-        this.checkProjectCollectionGroup(memberIdentity, `${instanceName}BuildServiceAccounts`, "Project Collection Build Service Accounts");
-
-      else if (memberIdentity?.providerDisplayName?.toUpperCase() === `[${collectionName}]\\Project Collection Developers`.toUpperCase())
-        this.checkProjectCollectionGroup(memberIdentity, `${instanceName}Developers`, "Project Collection Developers");
-
-      else if (memberIdentity?.providerDisplayName?.toUpperCase() === `[${collectionName}]\\Project Collection Operators`.toUpperCase())
-        this.checkProjectCollectionGroup(memberIdentity, `${instanceName}Operators`, "Project Collection Operators");
-
-      else if (memberIdentity?.providerDisplayName?.toUpperCase() === `[${collectionName}]\\Project Collection Compliance Officers`.toUpperCase())
-        this.checkProjectCollectionGroup(memberIdentity, `${instanceName}ComplianceOfficers`, "Project Collection Compliance Officers");
-
-      else if (memberIdentity?.providerDisplayName?.toUpperCase() === `[${collectionName}]\\Project Collection DevOps Engineers`.toUpperCase())
-        this.checkProjectCollectionGroup(memberIdentity, `${instanceName}DevOpsEngineers`, "Project Collection DevOps Engineers");
-
-      else if (memberIdentity?.providerDisplayName?.toUpperCase() === `[${collectionName}]\\Project Collection Release Engineers`.toUpperCase())
-        this.checkProjectCollectionGroup(memberIdentity, `${instanceName}ReleaseEngineers`, "Project Collection Release Engineers");
-
-      else if (memberIdentity?.providerDisplayName?.toUpperCase() === `[${collectionName}]\\Project Collection Proxy Service Accounts`.toUpperCase())
+      }
+      else if (memberIdentity?.providerDisplayName?.toUpperCase() === `[${collectionName}]\\Project Collection Auditors`.toUpperCase()) {
+        this.checkProjectCollectionGroup(memberIdentity, `${instanceName}Auditors`, 'Project Collection Auditors');
+      }
+      else if (memberIdentity?.providerDisplayName?.toUpperCase() === `[${collectionName}]\\Project Collection Build Administrators`.toUpperCase()) {
+        this.checkProjectCollectionGroup(memberIdentity, `${instanceName}BuildAdministrators`, 'Project Collection Build Administrators');
+      }
+      else if (memberIdentity?.providerDisplayName?.toUpperCase() === `[${collectionName}]\\Project Collection Build Service Accounts`.toUpperCase()) {
+        this.checkProjectCollectionGroup(memberIdentity, `${instanceName}BuildServiceAccounts`, 'Project Collection Build Service Accounts');
+      }
+      else if (memberIdentity?.providerDisplayName?.toUpperCase() === `[${collectionName}]\\Project Collection Developers`.toUpperCase()) {
+        this.checkProjectCollectionGroup(memberIdentity, `${instanceName}Developers`, 'Project Collection Developers');
+      }
+      else if (memberIdentity?.providerDisplayName?.toUpperCase() === `[${collectionName}]\\Project Collection Operators`.toUpperCase()) {
+        this.checkProjectCollectionGroup(memberIdentity, `${instanceName}Operators`, 'Project Collection Operators');
+      }
+      else if (memberIdentity?.providerDisplayName?.toUpperCase() === `[${collectionName}]\\Project Collection Compliance Officers`.toUpperCase()) {
+        this.checkProjectCollectionGroup(memberIdentity, `${instanceName}ComplianceOfficers`, 'Project Collection Compliance Officers');
+      }
+      else if (memberIdentity?.providerDisplayName?.toUpperCase() === `[${collectionName}]\\Project Collection DevOps Engineers`.toUpperCase()) {
+        this.checkProjectCollectionGroup(memberIdentity, `${instanceName}DevOpsEngineers`, 'Project Collection DevOps Engineers');
+      }
+      else if (memberIdentity?.providerDisplayName?.toUpperCase() === `[${collectionName}]\\Project Collection Release Engineers`.toUpperCase()) {
+        this.checkProjectCollectionGroup(memberIdentity, `${instanceName}ReleaseEngineers`, 'Project Collection Release Engineers');
+      }
+      else if (memberIdentity?.providerDisplayName?.toUpperCase() === `[${collectionName}]\\Project Collection Proxy Service Accounts`.toUpperCase()) {
         this.checkProjectCollectionProxyServiceAccounts(memberIdentity);
-
-      else if (memberIdentity?.providerDisplayName?.toUpperCase() === `[${collectionName}]\\Project Collection Service Accounts`.toUpperCase())
+      }
+      else if (memberIdentity?.providerDisplayName?.toUpperCase() === `[${collectionName}]\\Project Collection Service Accounts`.toUpperCase()) {
         this.checkProjectCollectionServiceAccounts(memberIdentity);
-
-      else if (memberIdentity?.providerDisplayName?.toUpperCase() === `[${collectionName}]\\Project Collection Test Service Accounts`.toUpperCase())
-        this.checkProjectCollectionGroup(memberIdentity, `${instanceName}TestServiceAccounts`, "Project Collection Test Service Accounts");
-
-      else if (memberIdentity?.providerDisplayName?.toUpperCase() === `[${collectionName}]\\Project Collection Testers`.toUpperCase())
-        this.checkProjectCollectionGroup(memberIdentity, `${instanceName}Testers`, "Project Collection Testers");
-
-      else if (memberIdentity?.providerDisplayName?.toUpperCase() === `[${collectionName}]\\Security Service Group`.toUpperCase())
+      }
+      else if (memberIdentity?.providerDisplayName?.toUpperCase() === `[${collectionName}]\\Project Collection Test Service Accounts`.toUpperCase()) {
+        this.checkProjectCollectionGroup(memberIdentity, `${instanceName}TestServiceAccounts`, 'Project Collection Test Service Accounts');
+      }
+      else if (memberIdentity?.providerDisplayName?.toUpperCase() === `[${collectionName}]\\Project Collection Testers`.toUpperCase()) {
+        this.checkProjectCollectionGroup(memberIdentity, `${instanceName}Testers`, 'Project Collection Testers');
+      }
+      else if (memberIdentity?.providerDisplayName?.toUpperCase() === `[${collectionName}]\\Security Service Group`.toUpperCase()) {
         this.checkSecurityServiceGroup(memberIdentity);
-
-      else if (memberIdentity?.providerDisplayName?.toUpperCase().includes("Project Valid Users".toUpperCase())) {
-        console.log(`Skipping ${memberIdentity.providerDisplayName}`)
+      }
+      else if (memberIdentity?.providerDisplayName?.toUpperCase().includes('Project Valid Users'.toUpperCase())) {
+        console.log(`Skipping ${memberIdentity.providerDisplayName}`);
         // this.checkSecurityServiceGroup(identity);
       }
 
       else {
         this.findings.push(
           this.ruleService.getFinding(
-            this.ruleService.getUnexpectedCollectionGroupMemberRule("Project Collection Valid Users"),
+            this.ruleService.getUnexpectedCollectionGroupMemberRule('Project Collection Valid Users'),
             memberIdentity?.providerDisplayName!,
             memberIdentity?.descriptor!
           )
-        )
+        );
       }
     });
   }
@@ -159,23 +156,23 @@ export class ProjectComponent implements OnInit {
    * @param identity The identity that matches the rules being checked by this method
    */
   private checkProjectCollectionGroup(identity: Identity, groupName: string, groupDisplayName: string): void {
-    const collectionName = this.azdoConnectionService.getCollectionName(this.azdoConnectionService.currentConnection.url)
+    const collectionName = this.azdoConnectionService.getCollectionName(this.azdoConnectionService.currentConnection.url);
 
     identity.members.forEach(descriptor => {
       const memberIdentity = this.projectCollectionValidUsersGroupMembersMembers?.value?.find(
-        identity => identity?.descriptor === descriptor
-      )
+        matchedidentity => identity?.descriptor === descriptor
+      );
       if (!(memberIdentity?.providerDisplayName?.toUpperCase() === `${groupName}`.toUpperCase())
       ) {
         console.log(`Invalid Identity found in ${groupDisplayName}`);
-        console.log(memberIdentity)
+        console.log(memberIdentity);
         this.findings.push(
           this.ruleService.getFinding(
             this.ruleService.getUnexpectedCollectionGroupMemberRule(groupDisplayName),
             memberIdentity?.providerDisplayName!,
             memberIdentity?.descriptor!
           )
-        )
+        );
       }
     });
   }
@@ -187,13 +184,13 @@ export class ProjectComponent implements OnInit {
    * @param identity The identity that matches the rules being checked by this method
    */
   private checkProjectCollectionAdministrators(identity: Identity): void {
-    const collectionName = this.azdoConnectionService.getCollectionName(this.azdoConnectionService.currentConnection.url)
+    const collectionName = this.azdoConnectionService.getCollectionName(this.azdoConnectionService.currentConnection.url);
     const instanceName = this.azdoConnectionService.currentConnection?.instanceName;
 
     identity.members.forEach(descriptor => {
       const memberIdentity = this.projectCollectionValidUsersGroupMembersMembers?.value?.find(
-        identity => identity?.descriptor === descriptor
-      )
+        matchedidentity => identity?.descriptor === descriptor
+      );
 
       if (!(memberIdentity?.providerDisplayName?.toUpperCase() === `[TEAM FOUNDATION]\\Team Foundation Administrators`.toUpperCase()
         || memberIdentity?.providerDisplayName?.toUpperCase() === `[${collectionName}]\\Project Collection Service Accounts`.toUpperCase()
@@ -203,11 +200,11 @@ export class ProjectComponent implements OnInit {
       ) {
         this.findings.push(
           this.ruleService.getFinding(
-            this.ruleService.getUnexpectedCollectionGroupMemberRule("Project Collection Administrators"),
+            this.ruleService.getUnexpectedCollectionGroupMemberRule('Project Collection Administrators'),
             memberIdentity?.providerDisplayName!,
             memberIdentity?.descriptor!
           )
-        )
+        );
       }
     });
   }
@@ -218,24 +215,24 @@ export class ProjectComponent implements OnInit {
    * @param identity The identity that matches the rules being checked by this method
    */
   private checkProjectCollectionServiceAccounts(identity: Identity): void {
-    const collectionName = this.azdoConnectionService.getCollectionName(this.azdoConnectionService.currentConnection.url)
+    const collectionName = this.azdoConnectionService.getCollectionName(this.azdoConnectionService.currentConnection.url);
     const instanceName = this.azdoConnectionService.currentConnection?.instanceName;
 
     identity.members.forEach(descriptor => {
       const memberIdentity = this.projectCollectionValidUsersGroupMembersMembers?.value?.find(
-        identity => identity?.descriptor === descriptor
-      )
+        matchedidentity => identity?.descriptor === descriptor
+      );
 
       if (!(memberIdentity?.providerDisplayName?.toUpperCase() === `[TEAM FOUNDATION]\\Azure DevOps Service Accounts`.toUpperCase()
         || memberIdentity?.providerDisplayName?.toUpperCase() === `[${collectionName}]\\Team Foundation Service Accounts`.toUpperCase())
       ) {
         this.findings.push(
           this.ruleService.getFinding(
-            this.ruleService.getUnexpectedCollectionGroupMemberRule("Project Collection Service Accounts"),
+            this.ruleService.getUnexpectedCollectionGroupMemberRule('Project Collection Service Accounts'),
             memberIdentity?.providerDisplayName!,
             memberIdentity?.descriptor!
           )
-        )
+        );
       }
     });
   }
@@ -246,23 +243,23 @@ export class ProjectComponent implements OnInit {
    * @param identity The identity that matches the rules being checked by this method
    */
   private checkProjectCollectionProxyServiceAccounts(identity: Identity): void {
-    const collectionName = this.azdoConnectionService.getCollectionName(this.azdoConnectionService.currentConnection.url)
+    const collectionName = this.azdoConnectionService.getCollectionName(this.azdoConnectionService.currentConnection.url);
     const instanceName = this.azdoConnectionService.currentConnection?.instanceName;
 
     identity.members.forEach(descriptor => {
       const memberIdentity = this.projectCollectionValidUsersGroupMembersMembers?.value?.find(
-        identity => identity?.descriptor === descriptor
-      )
+        matchedidentity => identity?.descriptor === descriptor
+      );
 
       if (!(memberIdentity?.providerDisplayName?.toUpperCase() === `[TEAM FOUNDATION]\\Azure DevOps Proxy Service Accounts`.toUpperCase())
       ) {
         this.findings.push(
           this.ruleService.getFinding(
-            this.ruleService.getUnexpectedCollectionGroupMemberRule("Project Collection Proxy Service Accounts"),
+            this.ruleService.getUnexpectedCollectionGroupMemberRule('Project Collection Proxy Service Accounts'),
             memberIdentity?.providerDisplayName!,
             memberIdentity?.descriptor!
           )
-        )
+        );
       }
     });
   }
@@ -273,32 +270,32 @@ export class ProjectComponent implements OnInit {
    * @param identity The identity that matches the rules being checked by this method
    */
   private checkSecurityServiceGroup(identity: Identity): void {
-    const collectionName = this.azdoConnectionService.getCollectionName(this.azdoConnectionService.currentConnection.url)
+    const collectionName = this.azdoConnectionService.getCollectionName(this.azdoConnectionService.currentConnection.url);
     const instanceName = this.azdoConnectionService.currentConnection?.instanceName;
 
     identity.members.forEach(descriptor => {
       const memberIdentity = this.projectCollectionValidUsersGroupMembersMembers?.value?.find(
-        identity => identity?.descriptor === descriptor
-      )
+        matchedidentity => identity?.descriptor === descriptor
+      );
 
-      if (!(memberIdentity?.customDisplayName?.toUpperCase().includes("Build Service".toUpperCase()))
+      if (!(memberIdentity?.customDisplayName?.toUpperCase().includes('Build Service'.toUpperCase()))
       ) {
         console.log(`Invalid Identity found in SecurityServiceGroup`);
-        console.log(memberIdentity)
+        console.log(memberIdentity);
         this.findings.push(
           this.ruleService.getFinding(
-            this.ruleService.getUnexpectedCollectionGroupMemberRule("Security Service Group"),
+            this.ruleService.getUnexpectedCollectionGroupMemberRule('Security Service Group'),
             memberIdentity?.providerDisplayName!,
             memberIdentity?.descriptor!
           )
-        )
+        );
       }
     });
   }
 
-  private check(identity: Identity): void {
-    // console.log("check");
-    // Should only contain [{collection}] Project Collection Service Acounts
-  }
+  // private check(identity: Identity): void {
+  //   // console.log("check");
+  //   // Should only contain [{collection}] Project Collection Service Acounts
+  // }
 
 }

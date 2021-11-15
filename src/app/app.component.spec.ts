@@ -2,9 +2,9 @@ import { TestBed } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { AppComponent } from './app.component';
 
-import { MatDialogModule } from '@angular/material/dialog'
-import { MatSnackBarModule } from '@angular/material/snack-bar'
-import { MatMenuModule } from '@angular/material/menu'
+import { MatDialogModule } from '@angular/material/dialog';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatMenuModule } from '@angular/material/menu';
 import { HttpClientModule } from '@angular/common/http';
 
 describe('AppComponent', () => {

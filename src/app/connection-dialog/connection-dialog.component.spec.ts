@@ -1,11 +1,11 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { FormsModule, ReactiveFormsModule, FormBuilder } from '@angular/forms'
+import { FormsModule, ReactiveFormsModule, FormBuilder } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 
 import { MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { MatSnackBarModule } from '@angular/material/snack-bar'
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { ConnectionDialogComponent, DialogData } from './connection-dialog.component';
-import { AzDoConnectionService } from '../core/services/azure-devops-connection.service';
+import { AzDoConnectionService } from '../core/services/azdo-connection.service';
 import { AzDoService } from '../core/services/azdo.service';
 import { SnackbarService } from '../core/services/snackbar.service';
 
@@ -39,7 +39,7 @@ describe('ConnectionDialogComponent', () => {
       ],
       providers: [
         AzDoConnectionService,
-        AzDoService,  
+        AzDoService,
         SnackbarService,
         FormBuilder,
         { provide: MatDialogRef, useValue: {} },

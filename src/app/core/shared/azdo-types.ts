@@ -21,8 +21,8 @@ export interface ApiVersion {
 }
 
 /**
- * Contains the top-level of an on-premise instance 
- * 
+ * Contains the top-level of an on-premise instance
+ *
  * Artifact Package Types
  *  Maven
  *  Npm
@@ -42,7 +42,7 @@ export interface ApiVersion {
  *   Feed Management
  *   Recycle Bin
  *   Retention Policies
- *   Service Settings   
+ *   Service Settings
  * Notification
  *  Diagnostic Logs
  *  Diagnostics
@@ -74,7 +74,7 @@ export interface ApiVersion {
  *   Revocation Rules
  *   Revocations
  *  Work Item Tracking
- *   Artifact Link Types 
+ *   Artifact Link Types
  *   Work Item Icons
  *   Work Item Relation Types
  *   Work Item Transitions
@@ -95,11 +95,11 @@ export interface ApiVersion {
  *   Behaviors
  *   Processes
  */
-export interface CollectionInfo {
-    /**
-     * The number of items in the collection
-     */
-}
+// export interface CollectionInfo {
+//     /**
+//      * The number of items in the collection
+//      */
+// }
 
 /**
  * Contains information describing a project.
@@ -126,7 +126,7 @@ export interface CollectionInfo {
  *   Dashboards
  *   Widget Types
  *   Widgets
- * Git 
+ * Git
  *   Annotation Tags
  *   Blobs
  *   Cherry Picks
@@ -344,10 +344,10 @@ export interface IdentityRef {
 }
 
 export interface Folder{
-    createdBy?:IdentityRef;
-    createdOn:string;
-    description?:string;
-    lastChangedBy?:IdentityRef;
-    lastChangedDate:string;
-    path:string;
+    createdBy?: IdentityRef;
+    createdOn: string;
+    description?: string;
+    lastChangedBy?: IdentityRef;
+    lastChangedDate: string;
+    path: string;
 }

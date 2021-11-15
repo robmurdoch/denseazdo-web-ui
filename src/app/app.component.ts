@@ -17,8 +17,8 @@ import { AzDoCacheService } from './core/services/azdo-cache.service';
 export class AppComponent implements OnInit {
   title = 'Dense Azure DevOps';
   description = 'Regulatory-driven Team Projects with drift detection';
-  showSpinner: boolean = false;
-  newConnectionPrompt = "New Connection";
+  showSpinner = false;
+  newConnectionPrompt = 'New Connection';
   projects: Collection<ProjectInfo>;
 
   constructor(
@@ -38,17 +38,17 @@ export class AppComponent implements OnInit {
         .subscribe(results => {
           this.projects = results;
           this.showSpinner = false;
-        })
+        });
     }
   }
 
-  connectionMenuOpened() {
-    console.log("Might want to mask out the main content area when this happens");
+  connectionMenuOpened(): void {
+    console.log('Might want to mask out the main content area when this happens');
   }
 
-  connectionClicked(connection: ConnectionInfo | undefined) {
+  connectionClicked(connection: ConnectionInfo | undefined): void {
     if (connection === undefined) {
-      this.openConnectionDialog({ url: "", token: "" });
+      this.openConnectionDialog({ url: '', token: '' });
     } else {
       this.azDoConnectionService.setConnection(connection);
       this.ngOnInit();

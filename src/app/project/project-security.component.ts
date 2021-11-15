@@ -2,7 +2,7 @@ import { Component, OnInit, Input } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Observable, from, of, zip, forkJoin, concat } from 'rxjs';
 import { concatMap } from 'rxjs/operators';
-import { saveAs } from 'file-saver'
+import { saveAs } from 'file-saver';
 import { Collection, ProjectInfo, SecurityNamespace, Identity, Folder } from '../core/shared/azdo-types';
 import { AzDoService } from '../core/services/azdo.service';
 import { AzDoConnectionService } from '../core/services/azdo-connection.service';
@@ -20,14 +20,14 @@ import { AzDoCacheService } from '../core/services/azdo-cache.service';
 })
 export class ProjectSecurityComponent implements OnInit {
   @Input() project: ProjectInfo;
-  showProjectSecuritySpinner: boolean = false;
-  showSecurityFindingsBadge: boolean = false;
-  securityFindingsCount: number = 0;
+  showProjectSecuritySpinner = false;
+  showSecurityFindingsBadge = false;
+  securityFindingsCount = 0;
   securityNamespaces: Collection<SecurityNamespace> = {};
   projectValidUsersGroup: Collection<Identity> = {};
   projectValidUsersGroupMembers: Collection<Identity> = {};
   projectValidUsersGroupMembersMembers: Collection<Identity> = {};
-  projectReleaseFolders: Collection<Folder> = {}
+  projectReleaseFolders: Collection<Folder> = {};
   projectReleaseFolderAcls: any;
   findings: Finding[] = [];
 
@@ -40,7 +40,7 @@ export class ProjectSecurityComponent implements OnInit {
     public dialog: MatDialog,
     private utilityService: UtilityService
   ) {
-    this.project = {}
+    this.project = {};
     this.securityNamespaces = this.azdoCacheService.securityNamespaces;
   }
 
@@ -55,7 +55,7 @@ export class ProjectSecurityComponent implements OnInit {
           of(topLevelGroupResponse),
           this.azdoService.getIdentities(
             topLevelGroup.memberIds
-            )
+          )
         ]);
       }),
       concatMap(([topLevelGroupResponse, topLevelGroupMembers]) => {
@@ -63,7 +63,7 @@ export class ProjectSecurityComponent implements OnInit {
           of(topLevelGroupResponse), of(topLevelGroupMembers),
           this.azdoService.getIdentities(
             this.combineMemberIds(topLevelGroupMembers?.value!)
-            )
+          )
         ]);
       }),
       concatMap(([topLevelGroupResponse, topLevelGroupMembers, secondLevelGroupMembers]) => {
@@ -71,21 +71,21 @@ export class ProjectSecurityComponent implements OnInit {
           of(topLevelGroupResponse), of(topLevelGroupMembers), of(secondLevelGroupMembers),
           this.azdoService.getReleaseFolders(
             this.project?.name!
-            )
-        ])
+          )
+        ]);
       }),
       concatMap(([topLevelGroupResponse, topLevelGroupMembers, secondLevelGroupMembers, releaseFolders]) => {
         return forkJoin([
           of(topLevelGroupResponse), of(topLevelGroupMembers), of(secondLevelGroupMembers), of(releaseFolders),
           this.azdoService.getAccessControlLists(
-            this.azdoCacheService.releaseManagementSecurityNamespaceId, 
+            this.azdoCacheService.releaseManagementSecurityNamespaceId,
             `${this.project.id}`
-            )
-        ])
+          )
+        ]);
       })
     ).subscribe(values => {
-      this.azdoCacheService.cacheIdentities(values[1])
-      this.azdoCacheService.cacheIdentities(values[2])
+      this.azdoCacheService.cacheIdentities(values[1]);
+      this.azdoCacheService.cacheIdentities(values[2]);
       this.projectValidUsersGroup = values[0];
       this.projectValidUsersGroupMembers = values[1];
       this.projectValidUsersGroupMembersMembers = values[2];
@@ -94,98 +94,100 @@ export class ProjectSecurityComponent implements OnInit {
       this.checkProjectValidUsers();
       this.checkReleaseFolderSecurity();
       this.securityFindingsCount = this.findings.length;
-      this.showProjectSecuritySpinner = false
+      this.showProjectSecuritySpinner = false;
     });
   }
 
-  openFindingsDialog(chip: any) {
+  openFindingsDialog(chip: any): void {
     if (this.findings.length) {
       const dialogRef = this.dialog.open(FindingDialogComponent, {
         width: '500px',
         data: { findings: this.findings }
-      })
+      });
     } else {
       // Show some eyecandy telling them how great their security is and what was checked
     }
   }
 
   combineMemberIds(identities: Identity[]): string[] {
-    var memberIds: string[] = [];
+    let memberIds: string[] = [];
     identities.forEach(identity => {
-      memberIds = memberIds.concat(identity.memberIds!)
+      memberIds = memberIds.concat(identity.memberIds!);
     });
     return memberIds;
   }
 
-  refresh() {
+  refresh(): void {
     this.ngOnInit();
   }
 
-  download() {
+  download(): void {
     const collectionName = this.azdoConnectionService.getCollectionName(this.azdoConnectionService.currentConnection.url);
     this.utilityService.downloadCsvFile(
       this.ruleService.getCsvArray(this.findings),
-      `${collectionName}-${this.project.name}-SecurityGroups.csv`)
+      `${collectionName}-${this.project.name}-SecurityGroups.csv`);
   }
 
-  private checkProjectValidUsers() {
+  private checkProjectValidUsers(): void {
+    console.log('Checking Project Valid Users');
     const collectionName = this.azdoConnectionService.getCollectionName(this.azdoConnectionService.currentConnection.url);
     const instanceName = this.azdoConnectionService.currentConnection?.instanceName;
 
     this.projectValidUsersGroupMembers?.value!.forEach(member => {
+      console.log(`  Checking Member: member: ${member.providerDisplayName}`)
       const memberIdentity = this.projectValidUsersGroupMembers?.value?.find(
-        identity => identity?.descriptor === member.descriptor
-      )
+        element => element?.descriptor === member.descriptor
+      );
 
-      if (memberIdentity?.providerDisplayName?.toUpperCase() === `[${this.project.name}]\\Project Administrators`.toUpperCase())
-        this.checkProjectGroup(memberIdentity, `[${collectionName}]\\Project Collection Administrators`, "Project Administrators");
-
-      else if (memberIdentity?.providerDisplayName?.toUpperCase() === `[${this.project.name}]\\Auditors`.toUpperCase())
-        this.checkProjectGroup(memberIdentity, `[${collectionName}]\\Project Collection Auditors`, "Auditors");
-
-      else if (memberIdentity?.providerDisplayName?.toUpperCase() === `[${this.project.name}]\\Build Administrators`.toUpperCase())
-        this.checkProjectGroup(memberIdentity, `[${collectionName}]\\Project Collection Build Administrators`, "Build Administrators");
-
-      else if (memberIdentity?.providerDisplayName?.toUpperCase() === `[${this.project.name}]\\Developers`.toUpperCase())
-        this.checkProjectGroup(memberIdentity, `[${collectionName}]\\Project Collection Developers`, "Developers");
-
-      else if (memberIdentity?.providerDisplayName?.toUpperCase() === `[${this.project.name}]\\Operators`.toUpperCase())
-        this.checkProjectGroup(memberIdentity, `[${collectionName}]\\Project Collection Operators`, "Operators");
-
-      else if (memberIdentity?.providerDisplayName?.toUpperCase() === `[${this.project.name}]\\Compliance Officers`.toUpperCase())
-        this.checkProjectGroup(memberIdentity, `[${collectionName}]\\Project Collection Compliance Officers`, "Compliance Officers");
-
-      else if (memberIdentity?.providerDisplayName?.toUpperCase() === `[${this.project.name}]\\DevOps Engineers`.toUpperCase())
-        this.checkProjectGroup(memberIdentity, `[${collectionName}]\\Project Collection DevOps Engineers`, "DevOps Engineers");
-
-      else if (memberIdentity?.providerDisplayName?.toUpperCase() === `[${this.project.name}]\\Release Engineers`.toUpperCase())
-        this.checkProjectGroup(memberIdentity, `[${collectionName}]\\Project Collection Release Engineers`, "Release Engineers");
-
-      else if (memberIdentity?.providerDisplayName?.toUpperCase() === `[${this.project.name}]\\Testers`.toUpperCase())
-        this.checkProjectGroup(memberIdentity, `[${collectionName}]\\Project Collection Testers`, "Testers");
-
-      else if (memberIdentity?.providerDisplayName?.toUpperCase() === `[${this.project.name}]\\Readers`.toUpperCase())
-        this.checkProjectGroup(memberIdentity, `[${collectionName}]\\Project Collection Readers`, "Readers");
-
-      else if (memberIdentity?.providerDisplayName?.toUpperCase() === `[${this.project.name}]\\Contributors`.toUpperCase())
-        this.checkProjectGroupIsEmpty(memberIdentity, "Contributors");
-
-        else if (memberIdentity?.providerDisplayName?.toUpperCase() === `[${this.project.name}]\\Release Administrators`.toUpperCase())
-          this.checkProjectGroupIsEmpty(memberIdentity, "Release Administrators");
-
-      else if (memberIdentity?.providerDisplayName?.toUpperCase().includes("Team".toUpperCase())) {
-        console.log(`Skipping ${memberIdentity.providerDisplayName}`)
+      if (memberIdentity?.providerDisplayName?.toUpperCase() === `[${this.project.name}]\\Project Administrators`.toUpperCase()) {
+        this.checkProjectGroup(memberIdentity, `[${collectionName}]\\Project Collection Administrators`, 'Project Administrators');
+      }
+      else if (memberIdentity?.providerDisplayName?.toUpperCase() === `[${this.project.name}]\\Auditors`.toUpperCase()) {
+        this.checkProjectGroup(memberIdentity, `[${collectionName}]\\Project Collection Auditors`, 'Auditors');
+      }
+      else if (memberIdentity?.providerDisplayName?.toUpperCase() === `[${this.project.name}]\\Build Administrators`.toUpperCase()) {
+        this.checkProjectGroup(memberIdentity, `[${collectionName}]\\Project Collection Build Administrators`, 'Build Administrators');
+      }
+      else if (memberIdentity?.providerDisplayName?.toUpperCase() === `[${this.project.name}]\\Developers`.toUpperCase()) {
+        this.checkProjectGroup(memberIdentity, `[${collectionName}]\\Project Collection Developers`, 'Developers');
+      }
+      else if (memberIdentity?.providerDisplayName?.toUpperCase() === `[${this.project.name}]\\Operators`.toUpperCase()) {
+        this.checkProjectGroup(memberIdentity, `[${collectionName}]\\Project Collection Operators`, 'Operators');
+      }
+      else if (memberIdentity?.providerDisplayName?.toUpperCase() === `[${this.project.name}]\\Compliance Officers`.toUpperCase()) {
+        this.checkProjectGroup(memberIdentity, `[${collectionName}]\\Project Collection Compliance Officers`, 'Compliance Officers');
+      }
+      else if (memberIdentity?.providerDisplayName?.toUpperCase() === `[${this.project.name}]\\DevOps Engineers`.toUpperCase()) {
+        this.checkProjectGroup(memberIdentity, `[${collectionName}]\\Project Collection DevOps Engineers`, 'DevOps Engineers');
+      }
+      else if (memberIdentity?.providerDisplayName?.toUpperCase() === `[${this.project.name}]\\Release Engineers`.toUpperCase()) {
+        this.checkProjectGroup(memberIdentity, `[${collectionName}]\\Project Collection Release Engineers`, 'Release Engineers');
+      }
+      else if (memberIdentity?.providerDisplayName?.toUpperCase() === `[${this.project.name}]\\Testers`.toUpperCase()) {
+        this.checkProjectGroup(memberIdentity, `[${collectionName}]\\Project Collection Testers`, 'Testers');
+      }
+      else if (memberIdentity?.providerDisplayName?.toUpperCase() === `[${this.project.name}]\\Readers`.toUpperCase()) {
+        this.checkProjectGroup(memberIdentity, `[${collectionName}]\\Project Collection Readers`, 'Readers');
+      }
+      else if (memberIdentity?.providerDisplayName?.toUpperCase() === `[${this.project.name}]\\Contributors`.toUpperCase()) {
+        this.checkProjectGroupIsEmpty(memberIdentity, 'Contributors');
+      }
+      else if (memberIdentity?.providerDisplayName?.toUpperCase() === `[${this.project.name}]\\Release Administrators`.toUpperCase()) {
+        this.checkProjectGroupIsEmpty(memberIdentity, 'Release Administrators');
+      }
+      else if (memberIdentity?.providerDisplayName?.toUpperCase().includes('Team'.toUpperCase())) {
+        console.log(`Skipping ${memberIdentity.providerDisplayName}`);
         // this.checkSecurityServiceGroup(identity);
       }
 
       else {
         this.findings.push(
           this.ruleService.getFinding(
-            this.ruleService.getUnexpectedProjectGroupMemberRule("Project Valid Users"),
+            this.ruleService.getUnexpectedProjectGroupMemberRule('Project Valid Users'),
             memberIdentity?.providerDisplayName!,
             memberIdentity?.descriptor!
           )
-        )
+        );
       }
     });
   }
@@ -198,10 +200,11 @@ export class ProjectSecurityComponent implements OnInit {
 
     identity.members.forEach(descriptor => {
       const memberIdentity = this.projectValidUsersGroupMembersMembers?.value?.find(
-        identity => identity?.descriptor === descriptor
-      )
-      if (!(memberIdentity?.providerDisplayName?.toUpperCase() === `${groupName}`.toUpperCase())
-      ) {
+        element => element?.descriptor === descriptor
+      );
+      console.log(`   Checking Member: memberIdentity: ${memberIdentity?.providerDisplayName}`)
+
+      if (!(memberIdentity?.providerDisplayName?.toUpperCase() === `${groupName}`.toUpperCase())) {
         console.log(`Invalid Identity found in ${groupDisplayName}`);
         this.findings.push(
           this.ruleService.getFinding(
@@ -209,7 +212,7 @@ export class ProjectSecurityComponent implements OnInit {
             memberIdentity?.providerDisplayName!,
             memberIdentity?.descriptor!
           )
-        )
+        );
       }
     });
   }
@@ -222,8 +225,9 @@ export class ProjectSecurityComponent implements OnInit {
 
     identity.members.forEach(descriptor => {
       const memberIdentity = this.projectValidUsersGroupMembersMembers?.value?.find(
-        identity => identity?.descriptor === descriptor
-      )
+        element => element?.descriptor === descriptor
+      );
+
       console.log(`Invalid Identity found in ${groupDisplayName}`);
       this.findings.push(
         this.ruleService.getFinding(
@@ -231,22 +235,24 @@ export class ProjectSecurityComponent implements OnInit {
           memberIdentity?.providerDisplayName!,
           memberIdentity?.descriptor!
         )
-      )
+      );
     });
   }
 
-  private checkReleaseFolderSecurity() {
+  private checkReleaseFolderSecurity(): void {
 
     const releasePermissionBits = this.azdoCacheService.getSecurityNamespace(
       this.azdoCacheService.releaseManagementSecurityNamespaceId).actions;
-    console.log(releasePermissionBits);
-    console.log(this.projectReleaseFolders)
-    console.log(this.projectReleaseFolderAcls)
-    this.projectReleaseFolderAcls.value.forEach((acl:any) => {
-      for(var key in acl.acesDictionary){
-        var value = acl.acesDictionary[key];
-        const identity = this.azdoCacheService.getIdentity(key)
-        console.log(identity);
+    // console.log(releasePermissionBits);
+    // console.log(this.projectReleaseFolders);
+    // console.log(this.projectReleaseFolderAcls);
+    this.projectReleaseFolderAcls.value.forEach((acl: any) => {
+      for (const key in acl.acesDictionary) {
+        if (acl.acesDictionary.hasOwnProperty(key)) {
+          const value = acl.acesDictionary[key];
+          const identity = this.azdoCacheService.getIdentity(key);
+          // console.log(identity);
+        }
       }
     });
 
