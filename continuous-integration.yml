@@ -1,6 +1,7 @@
 # Starter pipeline
 # Start with a minimal pipeline that you can customize to build and deploy your code.
 # Add steps that build, run tests, deploy, and more:
+# https://ciemasen.com/articles/how-to-build-angular-in-azure-devops
 # https://aka.ms/yaml
 
 trigger:
@@ -12,21 +13,33 @@ pool:
 steps:
 - task: NodeTool@0
   inputs:
-    versionSpec: '6.x'
+    versionSpec: '12.x'
   displayName: 'Install node.js'
-
-- script: |
-    npm install -g @angular/cli
-    npm install
-    ng build --prod
-  displayName: 'Npm install and build'
-
+- task: Npm@1
+  displayName: "Install Angular cli"
+  inputs:
+    command: "custom"
+    customCommand: "install -g @angular/cli"
+- task: Npm@1
+  displayName: "Install npm packages"
+  inputs:
+    command: "install"
+    verbose: true
+- task: CmdLine@2
+  displayName: "Build Angular app"
+  inputs:
+    script: 'ng build --prod'
+- task: CmdLine@2
+  displayName: "Validate Angular violations"
+  inputs:
+    script: "ng lint"
 - task: CopyFiles@2
   displayName: 'Stage Artifacts'
   inputs:
-    SourceFolder: dist
+    SourceFolder: "$(Build.SourcesDirectory)/dist"
     TargetFolder: '$(Build.ArtifactStagingDirectory)'
 - task: PublishBuildArtifacts@1
   displayName: 'Publish Artifacts'
   inputs:
+    PathtoPublish: "$(Build.ArtifactStagingDirectory)/dist"
     ArtifactName: 'DenseAzDo'
