@@ -6,6 +6,7 @@
 
 pool:
   name: Default (OnPrem)
+  demand: docker
 
 steps:
 - task: NodeTool@0
