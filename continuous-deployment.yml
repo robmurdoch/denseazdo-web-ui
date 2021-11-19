@@ -32,10 +32,10 @@ steps:
   inputs:
     script: 'ng build --prod'
 
-- task: CmdLine@2
-  displayName: "Validate Angular violations"
-  inputs:
-    script: "ng lint"
+# - task: CmdLine@2
+#   displayName: "Validate Angular violations"
+#   inputs:
+#     script: "ng lint"
 
 - task: CopyFiles@2
   displayName: 'Stage Artifacts'
