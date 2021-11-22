@@ -33,5 +33,5 @@ steps:
 - task: PublishBuildArtifacts@1
   displayName: 'Publish Artifacts'
   inputs:
-    PathtoPublish: "$(Build.ArtifactStagingDirectory)/dist"
+    PathtoPublish: "$(Build.ArtifactStagingDirectory)"
     ArtifactName: 'DenseAzDo'
