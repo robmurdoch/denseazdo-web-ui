@@ -1,2 +1,2 @@
-FROM nginx:1.17.1-alpine
+FROM mcr.microsoft.com/windows/servercore:ltsc2019
 COPY /dist/web-ui /usr/share/nginx/html
