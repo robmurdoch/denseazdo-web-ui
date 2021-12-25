@@ -25,11 +25,13 @@ steps:
 #   displayName: "Validate Angular violations"
 #   inputs:
 #     script: "ng lint"
+
 - task: CopyFiles@2
   displayName: 'Stage Artifacts'
   inputs:
     SourceFolder: "$(Build.SourcesDirectory)/dist"
     TargetFolder: '$(Build.ArtifactStagingDirectory)'
+    
 - task: PublishBuildArtifacts@1
   displayName: 'Publish Artifacts'
   inputs:
