@@ -1,6 +1,7 @@
 # Starter pipeline
 # Start with a minimal pipeline that you can customize to build and deploy your code.
 # Add steps that build, run tests, deploy, and more:
+# BuildAgent: 4w7swh7cnj5wlx5qj5qu7n2ptqtx2dv24k7tcqvaye3fmjhtw2lq
 # https://aka.ms/yaml
 
 trigger:
@@ -14,7 +15,7 @@ steps:
   inputs:
     versionSpec: '12.x'
   displayName: 'Install node.js'
-  
+
 - task: Npm@1
   displayName: "Install Angular cli"
   inputs:
