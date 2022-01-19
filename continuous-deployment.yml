@@ -4,8 +4,6 @@
 # BuildAgent: 4w7swh7cnj5wlx5qj5qu7n2ptqtx2dv24k7tcqvaye3fmjhtw2lq
 # https://aka.ms/yaml
 
-trigger:
-- main
 
 pool:
   name: Default (OnPrem)
@@ -33,10 +31,10 @@ steps:
   inputs:
     script: 'ng build --prod'
 
-- task: CmdLine@2
-  displayName: "Validate Angular violations"
-  inputs:
-    script: "ng lint"
+# - task: CmdLine@2
+#   displayName: "Validate Angular violations"
+#   inputs:
+#     script: "ng lint"
 
 - task: CopyFiles@2
   displayName: 'Stage Artifacts'
