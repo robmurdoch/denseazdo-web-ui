@@ -1,20 +1,16 @@
-FROM node:13-alpine
+# FROM node:13-alpine
 
-RUN npm config set strict-ssl false \
-    && npm config set proxy http://proxy.xxxxxx.com:8080
+FROM nginx:alpine
 
 RUN mkdir -p /home/app
 
 COPY ./dist/web-ui /home/app
+ADD ./ExperimentRootCA.crt /usr/local/share/ca-certificates/experimentrootca.crt
+ADD ./certificate.crt /etc/ssl/nginx.crt
+ADD ./private.key /etc/ssl/nginx.key
 
-# install packages
-# RUN npm ci
-RUN npm install -g @angular/cli
+COPY ./src/nginx.conf /etc/nginx/conf.d/default.conf
+
 
 # set default dir so that next commands executes in /home/app dir
 WORKDIR /home/app
-
-# will execute npm install in /home/app because of WORKDIR
-# RUN npm install
-
-CMD ng serve --host 0.0.0.0 --port 4200

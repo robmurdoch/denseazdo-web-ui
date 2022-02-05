@@ -33,7 +33,7 @@ Add the maxQueryString to the requestLimits setting
 1. Install Azure DevOps Express locally
 2. Backup databases (See data folder)
 3. Create 3 collections
-      - CourseGrained - Course-Grained Security Sample
+      - CourseGrained - Course-Grained Security Sample6rgf
       - FineGrained - Fine-Grained Security Sample
       - CrossGrained - Cross-Grained Security Sample
 4. Create local groups and user accounts
@@ -41,4 +41,12 @@ Add the maxQueryString to the requestLimits setting
     Import-Module .\New-AzDoTestData.psm1 -Force
     New-AzDoCollectionGroups -InstanceName TFS -Projects HR, Legal, SkunkWorks
 
-    KWnbR5Hsw64
+  ## Docker
+  Create a self-signed certificate (make it a habit to use SSL everywhere)
+  `openssl req -x509 -sha256 -nodes -days 365 -newkey rsa:4096 -keyout private.key -out certificate.crt`
+
+  Build the image
+  `docker build -f src/Dockerfile -t denseazdo .`
+  
+  Start the container detached and expose only the SSL port
+  `docker run --name denseazdo -dp 443:443 denseazdo:latest`
